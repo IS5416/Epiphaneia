@@ -18,6 +18,7 @@
 | API 设计 | `apiDesign.md` | RESTful API 端点、请求/响应结构、错误码规范 |
 | 数据库设计 | `dbSchema.md` | ER图、表结构、索引策略、数据迁移方案 |
 | UX/用户流程 | `userFlow.md` | 核心用户路径、页面流转、状态机 |
+| 架构交接文档 | `architectureDesignHandoff.md` | 两阶段交叉/提前讨论事务的沉淀，交付 ArchitectureDesign 阶段 |
 
 ## 行为约束
 
@@ -27,6 +28,7 @@
 4. **数据库规范**：表名/字段名统一使用 snake_case，必须定义索引策略。
 5. **向前兼容**：设计时考虑后续迭代扩展，但不过度设计——只设计当前 MVP 需要的东西。
 6. **可测试性**：每个 API 必须定义验收标准（正常/异常/边界）。
+7. **跨阶段沉淀**：对话中讨论的任何问题与结论，凡属 ProductPlanning 与 ArchitectureDesign 两阶段交叉公共、或被提前讨论到的下一阶段事务，沉淀至 `architectureDesignHandoff.md`。若本阶段正式产出物已说明该内容，交接文档只留指针，不重复书写。
 
 ## 退出条件
 
