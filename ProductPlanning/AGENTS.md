@@ -7,6 +7,7 @@
 ## 输入
 
 - `IdeaValidation/` 的产出物（市场调研、竞品分析、用户画像、MVP范围）
+- `ideavalidation-review.md` — 统筹层对 IdeaValidation 的审查反馈，包含需要在 ProductPlanning 阶段处理的注意点
 
 ## 产出物
 
