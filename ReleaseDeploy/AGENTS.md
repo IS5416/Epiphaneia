@@ -6,7 +6,8 @@
 
 ## 输入
 
-- `Testing/` 通过的版本
+- `product/` — 测试通过的待发布版本（含 `docker-compose.yml`、Dockerfile、CI 配置）
+- `Testing/` 的测试报告和缺陷清单
 - `ArchitectureDesign/deploymentArchitecture.md` 的部署方案
 
 ## 产出物

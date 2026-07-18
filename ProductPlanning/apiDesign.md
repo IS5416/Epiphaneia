@@ -78,7 +78,7 @@ Authorization: Bearer <token>  (or session cookie)
 | 状态码 | 说明 |
 |--------|------|
 | 200 | `{ "message": "Password changed" }`，mustChangePassword 置 false |
-| 400 | 新密码不符合复杂度（≥8 位，含字母+数字，草案） |
+| 400 | 新密码不符合复杂度（≥8 位，至少含 1 个大写字母、1 个小写字母、1 个数字） |
 | 401 | 未认证或当前密码错误 |
 | 403 | 当前密码正确但新密码与当前相同 |
 

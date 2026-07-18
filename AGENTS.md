@@ -28,9 +28,11 @@
 7. **选项推荐**：提供多个选项时，必须同时给出推荐选项及其理由。理由需包含：为什么选这个、为什么不选其他、潜在风险。
 8. **Git 提交规范**：commit message 使用简洁的一句式 Conventional Commits 格式（如 `feat:` / `fix:` / `chore:` / `docs:`），用冒号后一句话简要说明改动。禁止大段描述，禁止 `Co-Authored-By` 署名。示例：`fix: use trust_env=False instead of proxy=None to actually bypass system proxy`。
 9. **子代理审查（高优先级）**：每个产品阶段的主 agent 在每次产出或修改文件/代码后，必须自主判断是否达到里程碑节点（如一个阶段内完成了若干文档、一个功能模块编码完毕）。若判断达到里程碑，或当前文档量/代码量已经较多，**禁止自查**（主观性太强，容易陷入上下文惯性），必须派出本领域相关的一个或多个子代理（subagent）进行文档或代码审查，审查结果写回本阶段目录。此规则适用于所有阶段（含 IdeaValidation / ProductPlanning / ArchitectureDesign / Development / Testing / ReleaseDeploy / PostLaunch），统筹层不再逐阶段提醒。
-10. **当前状态**：ArchitectureDesign 阶段进行中——techStack、systemArchitecture 已完成，子代理审查已通过，等待 securityDesign / deploymentArchitecture / projectScaffold。
+10. **当前状态**：ArchitectureDesign 阶段进行中——techStack、systemArchitecture、securityDesign、deploymentArchitecture 已完成并通过子代理审查。`product/` 目录已建立作为真实软件项目根（方案D）。下一步：projectScaffold（本阶段最后产出物）。
 
-## 上下文
+## 目录结构约定
 
+- 流程阶段目录（`IdeaValidation/` / `ProductPlanning/` 等）承载流程文档和阶段产出物。
+- **`product/` 目录是真实软件项目根目录**，内含 Maven 多模块项目（pom.xml + 各 epiphaneia-* 模块），与流程阶段目录物理隔离。从 Development 阶段起，所有编码工作以 `product/` 为工作目录。构建命令从仓库根目录执行：`cd product && ./mvnw compile`。
 - 本文件为根节点统筹，每个子目录有各自的 `AGENTS.md` 约束该阶段行为。
 - 各目录 `CLAUDE.md` 仅引用对应 `AGENTS.md`，不重复内容。

@@ -6,9 +6,11 @@
 
 ## 输入
 
-- `Development/` 完成的功能代码
+- `product/` — Development 阶段完成的功能代码（测试目标）
+- `Development/` — 开发日志和代码审查记录
 - `ProductPlanning/` 的 PRD（验收标准）
 - `ArchitectureDesign/` 的安全设计和部署架构
+- `ArchitectureDesign/deploymentArchitecture.md` — CI/CD 流水线和环境配置
 
 ## 产出物
 
