@@ -81,3 +81,10 @@
 ## 4. 待补充（讨论中）
 
 （当前无）
+
+---
+*以下为 ProductPlanning 阶段内审查（productPlanningReview.md）的跨阶段建议，在本阶段不处理，移交 ArchitectureDesign。*
+
+**SPI-1: Connector DataSourceType 动态注册（审查建议 3）**
+
+domainModel 中 `DataSourceType` 枚举（`PROMETHEUS | ELASTICSEARCH | ACTUATOR`）在每次新增数据源时需改领域层枚举，是反模式。ArchitectureDesign 阶段 Connector SPI 设计时建议：枚举保留为常用类型的快捷常量，但 `ConnectorRegistry` 的匹配逻辑走 `DataSource.type` 字符串而非 switch-case 枚举。新增 Loki/MySQL/Redis 等连接器不应强制改领域层代码。

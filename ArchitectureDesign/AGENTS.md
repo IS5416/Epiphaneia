@@ -6,7 +6,8 @@
 
 ## 输入
 
-- `ProductPlanning/` 的产出物（PRD、领域模型、API设计、数据库设计）
+- `ProductPlanning/` 的产出物（PRD、领域模型、API设计、数据库设计、用户流程、架构交接文档）
+- `productPlanningFinalReview.md` — 统筹层对 ProductPlanning 阶段的最终审查，包含一致性验证结论和 8 项未决项
 
 ## 产出物
 

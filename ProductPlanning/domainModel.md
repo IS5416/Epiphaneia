@@ -133,8 +133,9 @@ stateDiagram-v2
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | `description` | String | 修复步骤说明 |
-| `complexity` | enum | `LOW` \| `MEDIUM` \| `HIGH`——MVP 一律标为 `HUMAN_REVIEW_REQUIRED`（非可执行指令，仅建议） |
-| `isSafe` | Boolean | 是否可在无人监督下执行——MVP 一律 `false` |
+| `autoExecutionAllowed` | Boolean | 是否可在无人监督下自动执行——**MVP 一律 `false`**。v1.5 自动修复引入时扩展为分级（如 safeLevel: MANUAL_ONLY / CONFIRMATION_REQUIRED / SAFE_AUTO），并重新引入 complexity 评估 |
+
+> 来自审查建议 1：合并 `complexity` + `isSafe` 为单一字段，消除 MVP 阶段的语义重叠。
 
 **RiskAssessment**：
 | 字段 | 类型 | 说明 |
