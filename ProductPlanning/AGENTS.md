@@ -29,6 +29,7 @@
 5. **向前兼容**：设计时考虑后续迭代扩展，但不过度设计——只设计当前 MVP 需要的东西。
 6. **可测试性**：每个 API 必须定义验收标准（正常/异常/边界）。
 7. **跨阶段沉淀**：对话中讨论的任何问题与结论，凡属 ProductPlanning 与 ArchitectureDesign 两阶段交叉公共、或被提前讨论到的下一阶段事务，沉淀至 `architectureDesignHandoff.md`。若本阶段正式产出物已说明该内容，交接文档只留指针，不重复书写。
+8. **阶段内审查**：统筹层对阶段性产出物的审查反馈记录于 `productPlanningReview.md`，后续子任务（如 apiDesign/dbSchema）编写时对照处理其中的建议项。
 
 ## 退出条件
 
