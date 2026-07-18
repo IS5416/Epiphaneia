@@ -1,6 +1,6 @@
-# FullProcess
+# Epiphaneia
 
-从想法到上线的产品全流程管理仓库。基于 Java Spring 生态。
+面向后端开发者的 AI Agent 智能诊断工作台。从想法到上线的全流程管理仓库。基于 Java Spring 生态。
 
 ## 流程节点
 
