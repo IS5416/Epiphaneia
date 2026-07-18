@@ -27,7 +27,7 @@
 6. **产出物管理**：每个节点的产出物存放在对应目录下，文件组织由该节点 AGENTS.md 约束。所有文档文件统一使用驼峰命名（camelCase），如 `marketResearch.md`、`ideaValidationReview.md`。目录使用 PascalCase（首字母大写），如 `IdeaValidation/`、`ProductPlanning/`。
 7. **选项推荐**：提供多个选项时，必须同时给出推荐选项及其理由。理由需包含：为什么选这个、为什么不选其他、潜在风险。
 8. **Git 提交规范**：commit message 使用简洁的一句式 Conventional Commits 格式（如 `feat:` / `fix:` / `chore:` / `docs:`），用冒号后一句话简要说明改动。禁止大段描述，禁止 `Co-Authored-By` 署名。示例：`fix: use trust_env=False instead of proxy=None to actually bypass system proxy`。
-9. **当前状态**：IdeaValidation 阶段完成，等待用户确认后进入 ProductPlanning。
+9. **当前状态**：ProductPlanning 阶段进行中——PRD、userFlow、domainModel、architectureDesignHandoff 已完成（2026-07-18 阶段性 commit），等待 apiDesign 和 dbSchema。
 
 ## 上下文
 
