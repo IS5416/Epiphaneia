@@ -72,6 +72,9 @@
 | 诊断质量验收：金标准故障集盲测（demo Spring Boot 应用 + 注入典型故障），草案 top-1 ≥60% / top-3 ≥80% | `PRD.md` 验收标准 | 需规划配套的故障注入 demo 应用（测试资产，非生产代码），脚手架阶段一并考虑 |
 | 语言策略：UI English-first（预留 i18n）；诊断报告语言跟随提问语言；README 中英双语 | `PRD.md` / `userFlow.md` | 前端选型需含 i18n 框架预留；Prompt 模板设计需支持输出语言跟随 |
 | 回退判断：无需回溯 IdeaValidation。JDK 21、分层物理合并、鉴权补充均属细化非推翻，偏差由本文档承接 | （本条即记录） | — |
+| 诊断"停止"为纯客户端行为：关闭 SSE，服务端总是跑到终态并存档，无服务端取消语义 | `userFlow.md` 流程 1 / 状态机 | 诊断管道无需实现中断处理（简化）；若未来需要真取消（成本控制/长耗时场景），升级路径为在 Agent 编排层加协作式取消检查点，状态机届时增加 CANCELLED 终态 |
+| 单用户多应用：P6 目标应用为列表管理，P3 含应用切换器；每个应用独立会话上下文、独立 LLM 上下文；共用 Prometheus + ES，数据隔离由 service label 达成。多应用 ≠ 多租户，无团队/权限/RBAC | `PRD.md` FR-6 / `userFlow.md` P3/P6 | DB schema 需 `application` 表 + `conversation.app_id` 外键；LLM 上下文管理需按 app 分区；若以后需要应用级凭证隔离（不同应用不同 Prometheus），Connector 配置需支持标签绑定——当前不做，v2.0 评估 |
+| 报告策略：会话级实时合成 + 导出即下载，不持久存储报告文件，无独立 report 表 | `PRD.md` FR-5 / `userFlow.md` P4/流程 2 | dbSchema 无 report 表——Conversation 是聚合根、Message 是证据实体，报告为会话的只读视图（LLM 实时合成）。影响：报告 API 端点为 `GET /api/v1/conversations/{id}/report`，不带持久化存储的 CRUD。若未来需要报告归档/版本对比/审计留存，升级路径为增加 report 表 + 导出时快照写入——当前不需要 |
 
 ---
 
