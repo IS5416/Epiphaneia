@@ -33,3 +33,12 @@
 - [x] 状态机含 ABORTED 终态描述（ProductPlanning ADJ-3 同步）
 - [x] ArchUnit 示例与实际包名一致（ADJ-2）
 - [x] ConnectorRegistry 归属矛盾已消解（ADJ-7）
+
+## projectScaffold 完成（2026-07-19）
+
+| 产出 | 状态 | 验证 |
+|------|------|------|
+| projectScaffold.md | ✅ | 骨架设计文档，含完整目录结构、POM设计、模块接口约定 |
+| product/ 骨架代码 | ✅ | 5 Maven 模块 + web-ui 前端 + Docker + Maven Wrapper |
+| `./mvnw compile` | ✅ BUILD SUCCESS | 全部 6 模块编译通过，infra 无 connector 依赖 |
+| 子代理审查 | ✅ 4/4 PASS | Build/RB-1、Structure、Config、Dependencies 全维度通过 |

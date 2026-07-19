@@ -1,0 +1,8 @@
+# production config — sensitive values injected via docker-compose environment
+spring:
+  jpa:
+    show-sql: false
+
+logging:
+  level:
+    io.epiphaneia: INFO

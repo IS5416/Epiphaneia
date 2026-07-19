@@ -1,0 +1,2 @@
+-- Initial admin — password generated at application startup, stored via ApplicationRunner
+-- This migration only ensures the table exists; the seed data is programmatic (see securityDesign §2.4)
