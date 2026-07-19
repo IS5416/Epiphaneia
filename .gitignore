@@ -9,9 +9,8 @@
 .DS_Store
 Thumbs.db
 
-# Init/config/prompt files
-init.txt
-review_choice.txt
+# prompt files
+prompt/
 
 # Java
 target/
