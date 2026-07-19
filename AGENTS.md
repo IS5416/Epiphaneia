@@ -29,6 +29,7 @@
 8. **Git 提交规范**：commit message 使用简洁的一句式 Conventional Commits 格式（如 `feat:` / `fix:` / `chore:` / `docs:`），用冒号后一句话简要说明改动。禁止大段描述，禁止 `Co-Authored-By` 署名。示例：`fix: use trust_env=False instead of proxy=None to actually bypass system proxy`。
 9. **子代理审查（高优先级）**：每个产品阶段的主 agent 在每次产出或修改文件/代码后，必须自主判断是否达到里程碑节点（如一个阶段内完成了若干文档、一个功能模块编码完毕）。若判断达到里程碑，或当前文档量/代码量已经较多，**禁止自查**（主观性太强，容易陷入上下文惯性），必须派出本领域相关的一个或多个子代理（subagent）进行文档或代码审查，审查结果写回本阶段目录。此规则适用于所有阶段（含 IdeaValidation / ProductPlanning / ArchitectureDesign / Development / Testing / ReleaseDeploy / PostLaunch），统筹层不再逐阶段提醒。
 10. **当前状态**：Development 阶段即将开始——ArchitectureDesign 阶段全部完成（5 份设计文档 + projectScaffold.md + product/ 骨架代码已通过编译验证和子代理审查），所有准入条件满足。
+11. **README 同步**：每次 commit 前检查 `README.md` 是否需要同步更新（如技术栈变更、阶段状态推进、项目结构变化、新增快速开始命令等）。README 是仓库门面，保持其与实际状态一致。
 
 ## 目录结构约定
 
