@@ -426,14 +426,14 @@ services:
 
 ArchUnit 规则示例（D-8）：
 ```java
-// 领域层不导入基础设施层
+// api 包不得被其他模块的 internal 依赖（ArchUnit 示例——实际规则见 systemArchitecture §12）
 @AnalyzeClasses(packages = "io.epiphaneia")
 class ArchitectureTest {
     @ArchTest
-    static final ArchRule domainDoesNotDependOnInfra = classes()
-        .that().resideInAPackage("..domain..")
+    static final ArchRule apiNotDependOnInternal = classes()
+        .that().resideInAPackage("..api..")
         .should().onlyDependOnClassesThat()
-        .resideOutsideOfPackage("..infrastructure..");
+        .resideOutsideOfPackage("..internal..");
 }
 ```
 
@@ -457,21 +457,21 @@ class ArchitectureTest {
 
 ```
 epiphaneia/                  ← Maven 父 POM (pom.xml, <packaging>pom</packaging>)
-├── epiphaneia-connector/    # ①集成层 Maven 模块（独立 artifact，社区贡献扩展点）
+├── epiphaneia-connector/    # ①集成层 Maven 模块（纯实现——SPI 在 infra，此处仅含 @Component 实现）
 ├── epiphaneia-engine/       # ②数据引擎 Maven 模块（PromQL/ES DSL 查询构建）
 ├── epiphaneia-agent-core/   # ③Agent编排+④LLM调度 Maven 模块（合并，MVP单Skill）
 ├── epiphaneia-server/       # Spring Boot 入口 Maven 模块（Controller + Security + SSE + 装配）
-├── epiphaneia-infra/        # 共享基础设施 Maven 模块（加密、缓存、安全横切）
+├── epiphaneia-infra/        # 共享基础设施 Maven 模块（含 Connector SPI + 加密/缓存/安全横切）
 └── epiphaneia-web-ui/       # ⚠️ 非 Maven 模块——独立 npm/Vite/React 项目，无 pom.xml
 ```
 
 | 模块（artifactId） | 类型 | 对应逻辑层 | 独立理由 |
 |-------------------|------|-----------|---------|
-| `epiphaneia-connector` | Maven | ⑥集成层 | **必须独立**——Connector 是社区贡献核心扩展点，独立 artifact + 清晰 SPI |
+| `epiphaneia-connector` | Maven | ⑥集成层 | **纯实现模块**——SPI 接口（`Connector<T,R>`）定义在 infra/api，connector 仅含 PrometheusConnector / ElasticsearchConnector 的 `@Component` 实现。社区贡献的新数据源 Connector 在此新增实现 |
 | `epiphaneia-engine` | Maven | ⑤数据引擎 | PromQL/ES DSL 构建逻辑复杂足够独立——未来 Loki Connector 复用同一 engine |
 | `epiphaneia-agent-core` | Maven | ③编排 + ④LLM | MVP 单 Skill，Spring AI 已承担 LLM 流程大半，合并减模块数 |
 | `epiphaneia-server` | Maven | ①接口 + ②Skill | Spring Boot 应用唯一入口（`main()`），依赖所有下层模块，含 REST Controller / SSE / Security 配置。**不含前端代码** |
-| `epiphaneia-infra` | Maven | 横切 | 加密、缓存配置、安全 Filter、ConnectorRegistry——所有 Maven 模块共用 |
+| `epiphaneia-infra` | Maven | 横切 | **共享基础设施 + Connector SPI**——含 `Connector<T,R>` SPI 接口、`ConnectorRegistry`、加密、缓存配置、安全 Filter。所有 Maven 模块共用 |
 | `epiphaneia-web-ui` | **npm** | UI | React + Vite + TypeScript，独立构建。生产由 Nginx serve 静态文件。目录名遵循模块命名约定，但无 `pom.xml`，不参与 Maven 构建 |
 
 **命名说明**：
@@ -479,15 +479,18 @@ epiphaneia/                  ← Maven 父 POM (pom.xml, <packaging>pom</packagi
 - `epiphaneia-web-ui` 而非 `frontend/`——目录名与 Maven 模块命名保持一致（`epiphaneia-` 前缀），可识读为同一产品家族。但无 `pom.xml`，Maven 构建跳过此目录
 - 前端不设为 Maven 模块：React 构建工具链是 Vite/npm，用 `frontend-maven-plugin` 包装 npm 构建到 Maven 生命周期增加不必要的复杂度。前后端各自独立构建，CI 中并行——更快
 
-依赖方向（禁止反向）：
+依赖方向（禁止反向——Maven 编译强制，无循环）：
 ```
-epiphaneia-server → epiphaneia-agent-core → epiphaneia-engine → epiphaneia-connector
-epiphaneia-server → epiphaneia-infra
-epiphaneia-agent-core → epiphaneia-infra
-epiphaneia-engine → epiphaneia-infra
-epiphaneia-connector 仅依赖 epiphaneia-infra（无内部模块依赖）
+epiphaneia-server → epiphaneia-agent-core → epiphaneia-engine
+                            ↓                      ↓
+                       epiphaneia-infra ←─────────┘
+                            ↑
+                    epiphaneia-connector → epiphaneia-infra（单向依赖，仅 infra → connector 方向禁止）
+                    
 epiphaneia-web-ui 独立——不参与 Maven 依赖图
 ```
+
+> **循环依赖修正**（RB-1）：`Connector<T,R>` SPI 接口定义在 `infra/api`，connector 的 `@Component` 实现类在 `connector/internal`。infra 中的 `ConnectorRegistryImpl` 通过 Spring Bean 扫描收集 connector 的实例，但 `infra` 模块的 `pom.xml` **不声明对 `connector` 的编译依赖**——`ConnectorRegistryImpl` 使用 `List<Connector>` 的类型来自 `infra/api` 自身，Spring 在运行时注入 connector 模块的实现 Bean。Maven 编译期 `infra` 不知道 `connector` 的存在。
 
 groupId 统一 `io.epiphaneia`。
 

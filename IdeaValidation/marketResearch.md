@@ -84,12 +84,22 @@
 
 ## 5. 数据源
 
-- MarketsandMarkets: AI Agents Market Report, 2025
-- Gartner: AIOps Platform Market Guide, 2025
-- IDC: Developer Tools Market Forecast, 2025
-- SlashData: State of the Developer Nation, 2025
-- GitHub Octoverse: AI Trends in Open Source, 2025
-- Google Trends: "Java AI Agent" / "Spring AI" / "LangChain4j" 搜索趋势, 2025-2026
+| 数据点 | 来源 | 级别 |
+|--------|------|------|
+| AI Agent 市场规模 $4.8B→$47.1B, CAGR 58% | MarketsandMarkets: AI Agents Market Report, 2025 | [转述自公开发布的行业报告摘要] |
+| AIOps 市场规模 $25B→$65B, CAGR 21% | Gartner: AIOps Platform Market Guide, 2025 | [转述自公开发布的行业报告摘要] |
+| 开发者工具市场 $9.2B→$22.8B, CAGR 20% | IDC: Developer Tools Market Forecast, 2025 | [转述自公开发布的行业报告摘要] |
+| Java 开发者 1,220 万 | SlashData: State of the Developer Nation, 2025 | [直接引用] |
+| GitHub AI 开源趋势 | GitHub Octoverse: AI Trends in Open Source, 2025 | [直接引用] |
+| "Java + AI" 搜索上升 340% | Google Trends, 2025-2026 自查询 | [直接引用] |
+| TAM $2.5B（250 万用户 × $1,000 ARPU） | 作者推算 | [作者推算] |
+| SAM $610M（基于 10% 付费转化率） | 作者推算 | [作者推算] |
+
+**TAM 推算推理链**（[作者推算]）：
+1. 全球后端开发者 2,500 万（含 Java/Python/Go/Node.js）——底数来自 SlashData 2025 各语言开发者统计加总
+2. 假设 10% 有运维诊断需求 → 250 万潜在用户。10% 基于：中小团队（<50 人）通常没有专职 SRE，后端开发者兼任运维诊断；大企业有专职 SRE 但比例较低
+3. 开源 + 企业版 ARPU $1,000/年（对比 PagerDuty $480/年、Datadog $1,800/年，取对标价的 30%-55%）
+4. 250 万 × $1,000 = $2.5B TAM。此为方向性参考值，不作为商业计划承诺
 
 ---
 

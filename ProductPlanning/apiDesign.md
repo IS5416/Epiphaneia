@@ -490,6 +490,7 @@ Authorization: Bearer <token>
     "role": "AGENT",
     "content": "The root cause appears to be...",
     "diagnosisState": "COMPLETED",
+    "failureReason": null,
     "evidence": [{ "source": "PROMETHEUS", "query": "...", "summary": "...", "anomalyWindow": { "start": "...", "end": "..." }, "collectedAt": "..." }],
     "hypotheses": [{ "rank": 1, "description": "...", "confidence": 0.85, "supportingEvidence": [...] }],
     "suggestions": [{ "description": "...", "autoExecutionAllowed": false }],
@@ -537,12 +538,12 @@ Authorization: Bearer <token>
 | 200 | SSE 流建立 |
 | 400 | question 为空 |
 | 404 | conversation 不存在 |
-| 409 | 该会话的上一轮诊断仍在进行中（一个会话同时只有一个诊断运行） |
+| 409 | 该会话的上一轮诊断仍在进行中（一个会话同时只有一个诊断运行）。**豁免**：若该 AGENT Message 的 `diagnosis_state` 为非终态（CREATED/PLANNING/QUERYING/ANALYZING）且 `created_at` 距今超过 150 秒（120s 超时 + 30s 缓冲），服务端自动将悬挂 Message 标记为 ABORTED（failureReason="Timeout exceeded"），并允许新消息进入 |
 | 412 | LLM 未配置 |
 
 验收：
 - 正常：新 AGENT Message 追加进 Conversation，SSE 推送本轮诊断过程
-- 异常：上一轮诊断未完成 → 409（"A diagnosis is already in progress for this conversation"）
+- 异常：上一轮诊断未完成且未超时 → 409（"A diagnosis is already in progress for this conversation"）；上一轮超时悬挂 → 自动标记 ABORTED → 新消息接受
 - 边界：多轮追问后上下文窗口增长——截断策略在 Agent 编排框架实现（基础设施层，API 不感知）
 
 ### GET `/conversations/{id}/events`
@@ -650,7 +651,7 @@ Content-Type: application/json
 | 401 | `INVALID_CREDENTIALS` | 登录密码错误 |
 | 403 | `SAME_PASSWORD` | 改密时新旧密码相同 |
 | 404 | `NOT_FOUND` | 资源不存在 |
-| 409 | `DIAGNOSIS_IN_PROGRESS` | 会话上轮诊断未完成时追加问题 |
+| 409 | `DIAGNOSIS_IN_PROGRESS` | 会话上轮诊断未完成时追加问题（未超时悬挂） |
 | 409 | `RESOURCE_CONFLICT` | 同 type DataSource 或同名 Application 已存在 |
 | 412 | `LLM_NOT_CONFIGURED` | 提问时 LLM 尚未配置 |
 | 412 | `LLM_NOT_CONFIGURED` | /llm/test 时 LLM 未配置 |

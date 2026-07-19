@@ -76,7 +76,8 @@
 | `hypotheses` | List\<RootCauseHypothesis\> (VO) | LLM 输出的根因假设，最多 3 个，按 confidence 降序 |
 | `suggestions` | List\<FixSuggestion\> (VO) | 修复建议 |
 | `riskAssessment` | RiskAssessment? (VO) | 风险评估 |
-| `tokenCount` | Int? | LLM 消耗 token 数（成本追踪，仅在 COMPLETED/COMPLETED_PARTIAL 后填入） |
+| `tokenCount` | Int? | LLM 消耗 token 数（成本追踪，仅在终态后填入） |
+| `failureReason` | String? | 仅 ABORTED/FAILED 时有值。ABORTED："Server restart during diagnosis" / "Timeout exceeded"；FAILED："LLM returned unrecoverable error" 等 |
 | `createdAt` | Instant | |
 | `completedAt` | Instant? | 诊断运行结束时间（终态时填入） |
 
@@ -96,19 +97,24 @@ stateDiagram-v2
     PLANNING --> COMPLETED_PARTIAL: 超时
     QUERYING --> COMPLETED_PARTIAL: 超时
     ANALYZING --> FAILED: LLM 中途不可恢复错误
+    PLANNING --> ABORTED: 服务器崩溃/重启后扫描
+    QUERYING --> ABORTED: 服务器崩溃/重启后扫描
+    ANALYZING --> ABORTED: 服务器崩溃/重启后扫描
     COMPLETED --> [*]
     COMPLETED_PARTIAL --> [*]
     FAILED --> [*]
+    ABORTED --> [*]
 ```
 
 设计要点：
 - **无 CANCELLED 状态**——服务端总是跑到终态（handoff 决策）
-- **诊断失败 != 聚合失效**——FAILED 后用户可在同一 Conversation 中重新提问（创建新的 AGENT 消息），历史 FAILED 消息保留
+- **ABORTED 终态**——服务器崩溃或重启后，启动扫描将超过超时缓冲的非终态诊断标记为 ABORTED。`failureReason` 记录中断原因。用户可在同一会话中重新提问
+- **诊断失败 != 聚合失效**——FAILED 或 ABORTED 后用户可在同一 Conversation 中重新提问（创建新的 AGENT 消息），历史非终态改为 ABORTED、已 FAILED 消息保留
 - COMPLETED_PARTIAL 在报告中声明数据缺口（对应 FR-2/3 降级场景）
 
 ### 2.3 值对象（共享内核）
 
-**DiagnosisState**（enum）：`CREATED | PLANNING | QUERYING | ANALYZING | COMPLETED | COMPLETED_PARTIAL | FAILED`
+**DiagnosisState**（enum）：`CREATED | PLANNING | QUERYING | ANALYZING | COMPLETED | COMPLETED_PARTIAL | FAILED | ABORTED`
 
 **Evidence**：
 | 字段 | 类型 | 说明 |
@@ -308,6 +314,8 @@ interface ReportSynthesizer {
 ### 6.3 ConnectorRegistry
 
 数据源连接器注册与发现。用于 DiagnosisOrchestrator 按需获取 connector。
+
+> **归属修正（ArchitectureDesign RB-1/ADJ-7）**：ConnectorRegistry 接口定义在基础设施层（`epiphaneia-infra/api`），实现在基础设施层（`epiphaneia-infra/internal/ConnectorRegistryImpl`）。它不属于领域服务——领域层（`epiphaneia-agent-core`）通过依赖 `infra/api` 获得 `ConnectorRegistry` 接口的访问权，但 ConnectorRegistry 的实现细节（Spring Bean 收集 + Map 查找）是基础设施关注点。
 
 ```
 interface ConnectorRegistry {

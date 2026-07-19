@@ -20,17 +20,17 @@
 
 ### 2.1 ✅ Must Have — 不上线就无意义
 
-| 功能模块 | 具体内容 | 优先级 |
-|----------|---------|--------|
-| **自然语言诊断问答** | 用户输入自然语言描述问题，Agent 自动拆解、查询、分析、回答 | P0 |
-| **Prometheus 集成** | 通过 PromQL 查询指标，自动生成查询语句，异常检测 | P0 |
-| **ELK/Loki 集成** | 基于时间和关键词的日志检索，异常模式提取 | P0 |
-| **LLM 根因推断** | 综合分析指标+日志 → 输出：根因假设、证据链、修复方案、风险评估 | P0 |
-| **诊断报告生成** | Markdown 格式报告：时间线 + 证据 + 根因 + 建议，可分享 | P0 |
-| **Spring Boot 零配置接入** | 自动发现 Actuator 端点，读取 health/metrics/env 信息 | P0 |
-| **Web UI** | 对话式诊断界面（类 ChatGPT 交互）+ 报告查看页 | P0 |
-| **REST API** | 所有诊断能力通过 API 暴露（API First 原则） | P0 |
-| **Docker 部署** | docker-compose 一键启动（Nginx + Spring Boot） | P0 |
+| 功能模块 | 具体内容 | 优先级 | 完成标准（MVP 深度约束） |
+|----------|---------|--------|--------------------------|
+| **自然语言诊断问答** | 用户输入自然语言描述问题，Agent 自动拆解、查询、分析、回答 | P0 | 单轮对话可用，不做多轮上下文记忆（MVP 每问独立） |
+| **Prometheus 集成** | 通过 PromQL 查询指标，自动生成查询语句，异常检测 | P0 | 查询单个 Prometheus 实例，支持 LLM 自动生成 PromQL 并执行 |
+| **ELK/Loki 集成** | 基于时间和关键词的日志检索，异常模式提取 | P0 | 关键词查询 + 错误日志采样（最近 N 条、按时间范围过滤），不做 DSL 查询构建器 |
+| **LLM 根因推断** | 综合分析指标+日志 → 输出：根因假设、证据链、修复方案、风险评估 | P0 | 单次诊断使用单一 LLM 后端，不做多模型投票/交叉验证 |
+| **诊断报告生成** | Markdown 格式报告：时间线 + 证据 + 根因 + 建议，可分享 | P0 | 静态 Markdown 输出，不做 PDF 导出、不做富文本编辑器 |
+| **Spring Boot 零配置接入** | 自动发现 Actuator 端点，读取 health/metrics/env 信息 | P0 | 识别单一 Spring Boot 项目，不做多服务拓扑发现 |
+| **Web UI** | 对话式诊断界面（类 ChatGPT 交互）+ 报告查看页 | P0 | 单用户界面，不做多用户/工作空间/权限。诊断历史列表 + 报告渲染 |
+| **REST API** | 所有诊断能力通过 API 暴露（API First 原则） | P0 | OpenAPI 3.0 文档 + 诊断接口（POST /api/diagnose），不做管理类 CRUD |
+| **Docker 部署** | docker-compose 一键启动（Nginx + Spring Boot + PostgreSQL） | P0 | 单节点部署，不做集群/高可用。docker-compose up 即用 |
 
 ### 2.2 🟡 Should Have — 时间允许就做
 
@@ -86,7 +86,7 @@ Epiphaneia = 监控工具的 AI 大脑层
 | 层级 | 技术选型 | 说明 |
 |------|---------|------|
 | **后端框架** | Spring Boot 3.x + Java 17+ | 项目根技术栈 |
-| **LLM 集成** | Spring AI + LangChain4j | 模型无关的 LLM 调度层 |
+| **LLM 集成** | Spring AI + LangChain4j | Spring AI 管 LLM 调用抽象（chat/completion/embedding），LangChain4j 管 Agent 编排（ReAct 策略、工具注册、对话记忆）。双框架各司其职，已由 ArchitectureDesign 阶段确认 |
 | **前端** | React 18 + Vite + TypeScript | 前后端分离 SPA |
 | **部署** | Docker + docker-compose + Nginx | 一键部署 |
 | **数据库** | PostgreSQL | 诊断记录、知识库、配置 |
@@ -103,6 +103,8 @@ Epiphaneia = 监控工具的 AI 大脑层
 ② 数据引擎 — 代码理解引擎 + 数据聚合/关联 + 知识库 RAG
 ① 集成层 — Prometheus Connector + ELK Connector + GitHub Connector
 ```
+
+**MVP 实现深度约束：每层仅 1 个硬编码实现。** Connector 仅 Prometheus/ELK，Skill 仅 Ops Skill，Adapter 仅 Java Adapter，知识库仅 PostgreSQL 全文索引。多实现和多后端切换在 v1.0 通过已有 SPI 接口扩展，无需重构。逻辑六层不意味着物理六模块——spi 接口应与对应领域模块同包，避免独立模块导致的循环依赖和空模块低内聚问题。
 
 ### 4.3 三大扩展接口（架构预留）
 
@@ -138,7 +140,7 @@ Epiphaneia = 监控工具的 AI 大脑层
 
 ## 6. MVP 工作量估算
 
-| 模块 | 工作量 | 说明 |
+| 模块 | 工作量（草稿） | 说明 |
 |------|--------|------|
 | 项目脚手架 + 核心框架搭建 | 3-4 天 | Spring Boot 项目初始化、多模块 Maven、CI 配置 |
 | 集成层（Prometheus + ELK Connector） | 4-5 天 | Connector 接口 + 两个实现 + 数据查询抽象 |
@@ -147,7 +149,10 @@ Epiphaneia = 监控工具的 AI 大脑层
 | Ops Skill（诊断提示词 + 规则 + 报告模板） | 5-7 天 | 这是核心价值——诊断准确度取决于此 |
 | Web UI + REST API | 4-5 天 | React 对话界面 + 报告渲染 + OpenAPI 文档 |
 | 测试 + 文档 + docker-compose | 3-4 天 | 集成测试 + README + 一键部署 |
-| **合计** | **约 4-5 周** | 单人开发，含学习/踩坑缓冲 |
+| **合计（草稿）** | **约 4-5 周** | 初始粗略估算 |
+| **合计（PRD 缓冲）** | **约 6-8 周** | PRD §7 已修正，含需求细化缓冲、LLM 调优时间和踩坑余量 |
+
+> **注意**：4-5 周是 ideaValidation 阶段的粗略估算（不准确）。PRD 已将开发周期 buffered 到 6-8 周。ArchitectureDesign 确认模块数 4±1，架构分层保留 + Agent 编码效率加持下 6-8 周可行。以 PRD 的 6-8 周为准。
 
 ---
 

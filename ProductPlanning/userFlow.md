@@ -137,9 +137,13 @@ stateDiagram-v2
     PLANNING --> COMPLETED_PARTIAL: 超时
     QUERYING --> COMPLETED_PARTIAL: 超时
     ANALYZING --> FAILED: LLM 中途不可恢复错误
+    PLANNING --> ABORTED: 服务器崩溃/重启后扫描
+    QUERYING --> ABORTED: 服务器崩溃/重启后扫描
+    ANALYZING --> ABORTED: 服务器崩溃/重启后扫描
     COMPLETED --> [*]
     COMPLETED_PARTIAL --> [*]
     FAILED --> [*]
+    ABORTED --> [*]
 ```
 
 | 状态 | 用户可见语义 | 终态 |
@@ -151,9 +155,11 @@ stateDiagram-v2
 | COMPLETED | 完整报告 | ✅ |
 | COMPLETED_PARTIAL | 部分结论（降级/超时/证据不足，报告中声明缺口） | ✅ |
 | FAILED | 失败（原因可读） | ✅ |
+| ABORTED | 诊断中断（服务器重启或超时过期） | ✅ |
 
 设计要点：
 - **无 CANCELLED 状态**——"停止"是客户端行为，服务端总是跑到终态（流程 1 简化决策）
+- **ABORTED 终态**——服务器崩溃或重启后，启动扫描将超时未完成的非终态诊断标记为 ABORTED。用户可查看已收集的部分证据，支持在同一会话中重新提问
 - **降级不是失败**——单数据源不可达进 COMPLETED_PARTIAL 路径，报告声明数据缺口（FR-2/3 验收标准）
 - 每次状态迁移即一条 SSE 事件，事件同时落库（断连重放依据）
 
