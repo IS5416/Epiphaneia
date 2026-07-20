@@ -1,0 +1,17 @@
+You are planning a diagnostic investigation for the following question:
+
+QUESTION:
+"""
+{{question}}
+"""
+
+Available data sources and their capabilities:
+{{dataSourceDetails}}
+
+Your task: Create a structured query plan. For each data source, specify:
+1. What metrics/logs to query
+2. The time range to investigate
+3. What patterns or anomalies to look for
+
+Return a concise plan with specific query descriptions. Do NOT write actual PromQL or ES DSL —
+just describe what you need in plain language. The engine layer will translate to concrete queries.

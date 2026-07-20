@@ -9,8 +9,8 @@
 .DS_Store
 Thumbs.db
 
-# prompt files
-prompt/
+# personal prompt files (root-level only)
+/prompt/
 
 # Java
 target/

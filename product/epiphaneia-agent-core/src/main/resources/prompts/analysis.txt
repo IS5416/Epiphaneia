@@ -1,0 +1,18 @@
+You are analyzing the following evidence collected from the diagnostic investigation:
+
+ORIGINAL QUESTION:
+"""
+{{question}}
+"""
+
+COLLECTED EVIDENCE:
+{{evidence}}
+
+Your task: Identify the root cause. For each hypothesis, provide:
+1. Description of the root cause
+2. Confidence level (0.0 to 1.0)
+3. Supporting evidence (reference specific data points)
+4. Rank hypotheses from most to least likely (maximum 3)
+
+Format your response with clear hypothesis sections.
+If the evidence is inconclusive, state which additional data would help.
