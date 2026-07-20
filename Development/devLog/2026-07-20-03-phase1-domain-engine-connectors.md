@@ -81,3 +81,44 @@
 | `efe3a5c` | test(agent-core): add PromptTemplateManagerTest — fix .gitignore prompt/ scope |
 | `e186baf` | feat(engine): implement PromQL/ES query builders and ActuatorProbeService |
 | `f6ef999` | feat(connector): implement PrometheusConnector and ElasticsearchConnector with HTTP/testConnection |
+
+## 审查后修订 (2026-07-20)
+
+三路子代理并行审查（设计一致性、架构安全、测试质量），审查报告：[codeReview/2026-07-20-02-phase1-review.md](../codeReviews/2026-07-20-02-phase1-review.md)
+
+### 已修复 (BLOCKER — 7/7)
+
+| # | 问题 | 修复 |
+|---|------|------|
+| B-1 | PromptTemplateManager 包路径应为 `internal/llm` | 移至 `io.epiphaneia.agent.internal.llm`，测试同步迁移 |
+| B-2 | ActuatorProbeService 缺少 SSRF 防护 | 新增 `validateUrl()` — 校验协议 http/https、拒绝 loopback/link-local/site-local 地址 |
+| B-3 | analysis.txt 中 `{{question}}` 未包裹分隔符 | 添加 `"""..."""` 包裹 |
+| B-4 | PrometheusQueryBuilder 参数 start/end/step 未使用 | 改为 `rangeWindow` 单参数，range 括号插入 aggregation 函数内或末尾 |
+| B-5 | EsQueryBuilder.escape() 无 null 检查 | 添加 `if (s == null) return "";` |
+| B-6 | PromptTemplateManager 重叠占位符 bug | `interpolate()` 按 key 长度降序排序后再替换 |
+| B-7 | MetricsQueryServiceImpl + LogQueryServiceImpl 零测试 | 各加 2 个测试 |
+
+### 已修复 (HIGH — 6/6)
+
+| # | 问题 | 修复 |
+|---|------|------|
+| H-1 | ActuatorProbeService safeGet 静默吞异常 | 添加 `log.debug()` 记录端点不可用 |
+| H-2 | EsQueryBuilder 中 startTime/endTime 未转义 | 应用 `escape()` 到所有时间参数 |
+| H-3 | ActuatorProbeService escape 缺少 `\` 和 `\r` | 与 EsQueryBuilder 统一为 4 字符转义 |
+| H-4 | DiagnosisStateMachine Javadoc ASCII 图不完整 | 重写为完整转换图 |
+| H-5 | EsQueryBuilder query_string Lucene 注入 | 新增 `escapeLucene()` 方法防 Lucene 特殊字符注入 |
+| H-6 | HttpClient 无 request timeout | JDK 21 未提供此 API — 改为 `HttpRequest.Builder.timeout()` 逐请求设置 |
+
+### 已修复 (MEDIUM — 3/5)
+
+| # | 问题 | 修复 |
+|---|------|------|
+| M-1 | isSensitiveKey 太宽 (key) 且遗漏 credential/pwd | 数组改为 `password/secret/credential/pwd/passwd/token/private_key/api_key` |
+| M-2 | 占位实现缺少 TODO 标记 | ponytail 注释已标注 Phase 2 |
+| M-3 | testConnection 忽略 authConfig | 标记为 Phase 2 实现项 |
+
+### 延后处理
+
+- M-4 (diagnosisState 原始 String 绕过状态机)：Setter 加校验会影响现有测试，Phase 2 编排层处理
+- M-5 (LLMType 重复列表)：枚举尚未创建，暂不处理
+- L-1~L-12 (低优先级)：不阻塞合入
