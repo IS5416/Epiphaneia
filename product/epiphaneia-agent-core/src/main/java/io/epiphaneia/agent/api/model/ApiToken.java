@@ -16,9 +16,15 @@ public class ApiToken {
     public ApiToken() {}
     public boolean isValid() { return revokedAt == null; }
     public UUID getId() { return id; }
+    public String getName() { return name; }
+    public void setName(String n) { this.name = n; }
     public String getTokenHash() { return tokenHash; }
     public void setTokenHash(String h) { this.tokenHash = h; }
     public String getPrefix() { return prefix; }
     public void setPrefix(String p) { this.prefix = p; }
+    public Instant getCreatedAt() { return createdAt; }
+    public Instant getRevokedAt() { return revokedAt; }
     public void setRevokedAt(Instant t) { this.revokedAt = t; }
+    public Admin getAdmin() { return admin; }
+    public void setAdmin(Admin a) { this.admin = a; }
 }

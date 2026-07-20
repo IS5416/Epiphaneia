@@ -1,5 +1,6 @@
 package io.epiphaneia.agent.internal.llm;
 
+import io.epiphaneia.agent.api.LlmProviderValidator;
 import io.epiphaneia.agent.api.model.LlmProvider;
 import io.epiphaneia.infra.api.EncryptionService;
 import org.springframework.stereotype.Component;
@@ -18,7 +19,7 @@ import java.util.Set;
  * Supported providers: OPENAI, ANTHROPIC, DEEPSEEK, OLLAMA, CUSTOM
  */
 @Component
-public class ModelRouter {
+public class ModelRouter implements LlmProviderValidator {
 
     private static final Set<String> SUPPORTED_PROVIDERS = Set.of(
             "OPENAI", "ANTHROPIC", "DEEPSEEK", "OLLAMA", "CUSTOM");
@@ -66,7 +67,8 @@ public class ModelRouter {
         return defaultBaseUrl(provider.getProvider());
     }
 
-    public static Set<String> getSupportedProviders() {
+    @Override
+    public Set<String> getSupportedProviders() {
         return SUPPORTED_PROVIDERS;
     }
 

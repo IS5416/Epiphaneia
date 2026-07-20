@@ -88,8 +88,8 @@ class ModelRouterTest {
     @Test
     @DisplayName("supported providers set is immutable")
     void supportedProviders() {
-        assertEquals(5, ModelRouter.getSupportedProviders().size());
-        assertTrue(ModelRouter.getSupportedProviders().contains("OPENAI"));
-        assertTrue(ModelRouter.getSupportedProviders().contains("CUSTOM"));
+        assertEquals(5, router.getSupportedProviders().size());
+        assertTrue(router.getSupportedProviders().contains("OPENAI"));
+        assertTrue(router.getSupportedProviders().contains("CUSTOM"));
     }
 }

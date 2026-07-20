@@ -1,8 +1,35 @@
 package io.epiphaneia.server.exception;
 
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import io.epiphaneia.server.dto.ApiResponse;
+import io.epiphaneia.server.dto.ErrorDetail;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
-    // Implemented in Development phase
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiResponse<Void> handleBadRequest(IllegalArgumentException e) {
+        return ApiResponse.error("VALIDATION_ERROR", e.getMessage());
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiResponse<Void> handleConflict(IllegalStateException e) {
+        return ApiResponse.error("DIAGNOSIS_IN_PROGRESS", e.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ApiResponse<Void> handleGeneral(Exception e) {
+        log.error("Unhandled exception", e);
+        return ApiResponse.error("INTERNAL_ERROR", "An internal error occurred. Check server logs.");
+    }
 }

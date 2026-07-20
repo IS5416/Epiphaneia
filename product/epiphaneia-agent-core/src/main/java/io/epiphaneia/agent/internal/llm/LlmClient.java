@@ -72,10 +72,8 @@ public class LlmClient {
     }
 
     private ChatClient buildClient(LlmProvider provider) {
-        ChatClient.Builder builder = chatClientBuilder;
-        if (provider.getBaseUrl() != null && !provider.getBaseUrl().isBlank()) {
-            builder = builder.defaultSystem(null); // ponytail: per-provider URL config via AiConfig
-        }
-        return builder.build();
+        // ponytail: per-provider URL/api-key config via AiConfig in server module.
+        // LlmClient delegates to the auto-configured ChatClient.Builder directly.
+        return chatClientBuilder.build();
     }
 }
