@@ -45,25 +45,26 @@ Development 阶段有两个工作目录，职责分离：
 
 5. **分支命名**：`feat/phase{N}-{scope}`，从 `main` 创建。
 6. **提交格式**：Conventional Commits 简洁一句式。禁止大段描述，禁止 `Co-Authored-By` 署名。示例：`feat(infra): implement AES-256-GCM encryption service`。
-7. **PR 规模**：单个 PR ≤ 400 行新增代码（不含测试和自动生成代码）。
-8. **分支生命周期**：`main` 创建分支 → 功能 + 测试 → PR → 子代理审查 → **人工确认** → squash merge 到 main → 删除分支。
+7. **单次变更规模**：单个分支 ≤ 400 行新增代码（不含测试和自动生成代码）。
+8. **分支生命周期**：`main` 创建分支 → 功能 + 测试 → 子代理审查 → **人工确认** → 本地 squash merge 到 main → 推送 main 到远程 → 删除本地分支。
+9. **远程策略**：仅推送 `main` 到远程。功能分支保留在本地，不走 GitHub PR（无远程协作需求，子代理审查在本地完成，PR 流程多余）。
 
 ### 操作纪律
 
-9. **人工确认闸门**：git commit、merge、push 等操作在子代理审查通过且人工确认之前，**禁止执行**。可准备好 commit message 和 staged changes，等待确认。
-10. **禁止 force push**：任何情况下禁止 `git push --force`。禁止 `git reset --hard` 到远程分支之前的提交。
-11. **禁止跳过 hooks**：禁止 `--no-verify`、`--no-gpg-sign`、`-c commit.gpgsign=false`。
-12. **提交前检查**：每次 commit 前检查 `README.md` 是否需要同步更新（技术栈变更、阶段状态推进、项目结构变化等）。
+10. **人工确认闸门**：git commit、merge、push 等操作在子代理审查通过且人工确认之前，**禁止执行**。可准备好 commit message 和 staged changes，等待确认。
+11. **禁止 force push**：任何情况下禁止 `git push --force`。禁止 `git reset --hard` 到远程分支之前的提交。
+12. **禁止跳过 hooks**：禁止 `--no-verify`、`--no-gpg-sign`、`-c commit.gpgsign=false`。
+13. **提交前检查**：每次 commit 前检查 `README.md` 是否需要同步更新（技术栈变更、阶段状态推进、项目结构变化等）。
 
 ## 里程碑审查
 
-13. **子代理审查（强制执行）**：每个 Phase 完成后视为里程碑节点，必须派出相关领域的子代理（subagent）进行代码审查。审查内容：
+14. **子代理审查（强制执行）**：每个 Phase 完成后视为里程碑节点，必须派出相关领域的子代理（subagent）进行代码审查。审查内容：
     - 代码与设计文档（ArchitectureDesign/、ProductPlanning/）的一致性
     - 包边界规则（ArchUnit：`*.api.*` 不导入框架类，`*.internal.*` 不被其他模块导入）
     - 安全约束（只读边界、凭证零回显、参数化查询、PII 保护）
     - 测试覆盖率和测试质量
     - 审查结果写入 `Development/codeReviews/` 目录
-14. **禁止自查**：主 agent 不得审查自己产出的代码。必须派出独立子代理。
+15. **禁止自查**：主 agent 不得审查自己产出的代码。必须派出独立子代理。
 
 ## 实现策略选择（编码前评估）
 
@@ -110,12 +111,12 @@ Development 阶段有两个工作目录，职责分离：
 
 ## 行为约束
 
-15. **测试先行**：核心业务逻辑优先写测试（TDD），工具类和 CRUD 允许测试后补。
-16. **代码规范**：遵循 Java 社区规范（阿里巴巴 Java 开发手册），统一 `Google Java Style` 格式化。
-17. **安全编码**：遵守 `ArchitectureDesign/securityDesign.md` 中定义的安全约束。
-18. **依赖管理**：新增第三方依赖需在 PR 中注明用途和风险评估。
-19. **环境变量**：所有配置信息（数据库连接、密钥等）通过环境变量注入，禁止硬编码。
-20. **工作目录**：所有编码、构建、测试命令以 `product/` 为工作目录。禁止在仓库根目录或阶段目录中创建 Java 源文件。
+16. **测试先行**：核心业务逻辑优先写测试（TDD），工具类和 CRUD 允许测试后补。
+17. **代码规范**：遵循 Java 社区规范（阿里巴巴 Java 开发手册），统一 `Google Java Style` 格式化。
+18. **安全编码**：遵守 `ArchitectureDesign/securityDesign.md` 中定义的安全约束。
+19. **依赖管理**：新增第三方依赖需在 commit 中注明用途和风险评估。
+20. **环境变量**：所有配置信息（数据库连接、密钥等）通过环境变量注入，禁止硬编码。
+21. **工作目录**：所有编码、构建、测试命令以 `product/` 为工作目录。禁止在仓库根目录或阶段目录中创建 Java 源文件。
 
 ## 退出条件
 
