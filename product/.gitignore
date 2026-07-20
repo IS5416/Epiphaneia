@@ -27,3 +27,6 @@ pg_data/
 
 # Logs
 *.log
+
+# Agents
+.claude/
