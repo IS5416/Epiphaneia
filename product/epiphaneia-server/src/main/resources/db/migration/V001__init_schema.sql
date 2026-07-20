@@ -72,6 +72,7 @@ CREATE TABLE message (
     role VARCHAR(10) NOT NULL CHECK (role IN ('USER', 'AGENT')),
     content TEXT NOT NULL,
     diagnosis_state VARCHAR(20),
+    failure_reason TEXT,
     risk_level VARCHAR(20),
     risk_impact TEXT,
     risk_urgency TEXT,

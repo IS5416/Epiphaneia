@@ -6,10 +6,11 @@ import java.util.UUID;
 public class Admin {
     @Id @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    @Column(nullable = false, unique = true) private String username = "admin";
+    @Column(nullable = false, unique = true, length = 50) private String username = "admin";
     @Column(name = "password_hash", nullable = false) private String passwordHash;
     @Column(name = "must_change_password", nullable = false) private boolean mustChangePassword = true;
-    @Column(name = "created_at", nullable = false) private Instant createdAt = Instant.now();
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt = Instant.now();
     public Admin() {}
     public UUID getId() { return id; }
     public String getUsername() { return username; }

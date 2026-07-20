@@ -18,4 +18,12 @@ public record AuthConfig(Type type, String username, String password, String tok
     public static AuthConfig bearer(String token) {
         return new AuthConfig(Type.BEARER, null, null, token);
     }
+
+    @Override
+    public String toString() {
+        return "AuthConfig[type=%s, username=%s, password=%s, token=%s]".formatted(
+                type, username,
+                password != null ? "***" : null,
+                token != null ? "***" : null);
+    }
 }

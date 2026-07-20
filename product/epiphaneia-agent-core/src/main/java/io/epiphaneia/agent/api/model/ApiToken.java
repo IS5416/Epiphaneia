@@ -11,7 +11,7 @@ public class ApiToken {
     @Column(nullable = false) private String name;
     @Column(name = "token_hash", nullable = false, unique = true, length = 64) private String tokenHash;
     @Column(nullable = false, length = 12) private String prefix;
-    @Column(name = "created_at") private Instant createdAt;
+    @Column(name = "created_at", nullable = false) private Instant createdAt = Instant.now();
     @Column(name = "revoked_at") private Instant revokedAt;
     public ApiToken() {}
     public boolean isValid() { return revokedAt == null; }

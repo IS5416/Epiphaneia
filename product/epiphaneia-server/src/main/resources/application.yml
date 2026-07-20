@@ -60,5 +60,4 @@ management:
         enabled: true
 
 epiphaneia:
-  encryption:
-    key: ${EPIPHANEIA_ENCRYPTION_KEY}
+  encryption-key: ${EPIPHANEIA_ENCRYPTION_KEY}
