@@ -74,7 +74,7 @@ public class BearerTokenFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
-    static String sha256(String input) {
+    public static String sha256(String input) {
         try {
             byte[] hash = MessageDigest.getInstance("SHA-256").digest(
                     input.getBytes(java.nio.charset.StandardCharsets.UTF_8));

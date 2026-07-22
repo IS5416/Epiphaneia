@@ -11,3 +11,5 @@
 | 2026-07-20 | 03 | Phase 1 领域逻辑 + 引擎 + 连接器完成 | [devLog/2026-07-20-03-phase1-domain-engine-connectors.md](devLog/2026-07-20-03-phase1-domain-engine-connectors.md) |
 | 2026-07-20 | 04 | Phase 2 Agent 编排完成 | [devLog/2026-07-20-04-phase2-orchestration.md](devLog/2026-07-20-04-phase2-orchestration.md) |
 | 2026-07-20 | 05 | Phase 3 Server 层完成 | [devLog/2026-07-20-05-phase3-server.md](devLog/2026-07-20-05-phase3-server.md) |
+| 2026-07-22 | 01 | Phase 4 启动准备完成（SB4.1.0 兼容、依赖修复、首次启动验证） | [devLog/2026-07-22-01-phase4-preparation.md](devLog/2026-07-22-01-phase4-preparation.md) |
+| 2026-07-22 | 02 | Phase 4 Web UI 完成（6 页面 + SSE + 审查修复） | [devLog/2026-07-22-02-phase4-web-ui.md](devLog/2026-07-22-02-phase4-web-ui.md) |

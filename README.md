@@ -11,7 +11,7 @@
 | 想法验证 | `IdeaValidation/` | ✅ 完成 |
 | 规划设计 | `ProductPlanning/` | ✅ 完成 |
 | 架构设计 | `ArchitectureDesign/` | ✅ 完成 |
-| 开发实现 | `Development/` | 🔜 即将开始 |
+| 开发实现 | `Development/` | 🔄 进行中（Phase 0-4 完成，Phase 5 Docker 收尾即将开始） |
 | 测试阶段 | `Testing/` | ⏳ 待开始 |
 | 发布上线 | `ReleaseDeploy/` | ⏳ 待开始 |
 | 上线后 | `PostLaunch/` | ⏳ 待开始 |
@@ -23,7 +23,7 @@
 | 语言 | Java | 21 LTS |
 | 框架 | Spring Boot | 4.1.0 |
 | 构建 | Maven | 3.9+ |
-| AI/Agent | Spring AI + LangChain4j | 2.0.0 / 1.17.2-beta27 |
+| AI/Agent | Spring AI | 2.0.0 |
 | 数据库 | PostgreSQL | 15+ |
 | 迁移工具 | Flyway | 10+ |
 | ORM | Spring Data JPA + Hibernate | 随 Boot 4.x |
@@ -50,11 +50,20 @@ product/                          ← 软件项目根目录（Maven 多模块）
 ## 快速开始
 
 ```bash
-# 构建全部模块
-cd product && ./mvnw compile
+# 1. 构建全部模块
+cd product && ./mvnw clean install -DskipTests
 
-# 启动（需要 PostgreSQL + 配置环境变量）
-cd product && ./mvnw -pl epiphaneia-server spring-boot:run
+# 2. 创建本地开发配置（product/epiphaneia-server/src/main/resources/application-local.yml）
+#    参考 .env.example，至少配置：DB 连接、DeepSeek API Key、加密密钥
+
+# 3. 启动（需要 PostgreSQL 运行中）
+cd product
+$env:SPRING_PROFILES_ACTIVE="local"
+./mvnw spring-boot:run -pl epiphaneia-server
+
+# 4. 访问 Swagger UI
+#    http://localhost:8080/swagger-ui.html
+#    初始管理员密码在控制台输出
 
 # 前端开发
 cd product/epiphaneia-web-ui && npm install && npm run dev
