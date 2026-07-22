@@ -11,8 +11,8 @@
 | 想法验证 | `IdeaValidation/` | ✅ 完成 |
 | 规划设计 | `ProductPlanning/` | ✅ 完成 |
 | 架构设计 | `ArchitectureDesign/` | ✅ 完成 |
-| 开发实现 | `Development/` | 🔄 进行中（Phase 0-4 完成，Phase 5 Docker 收尾即将开始） |
-| 测试阶段 | `Testing/` | ⏳ 待开始 |
+| 开发实现 | `Development/` | ✅ 完成（Phase 0-5 全部完成） |
+| 测试阶段 | `Testing/` | 🔜 下一阶段 |
 | 发布上线 | `ReleaseDeploy/` | ⏳ 待开始 |
 | 上线后 | `PostLaunch/` | ⏳ 待开始 |
 
