@@ -2,6 +2,7 @@ package io.epiphaneia.llm.internal.client;
 
 import com.openai.client.OpenAIClientImpl;
 import com.openai.core.ClientOptions;
+import com.openai.credential.BearerTokenCredential;
 import io.epiphaneia.domain.internal.entity.LlmProvider;
 import io.epiphaneia.llm.internal.routing.ModelRouter;
 import org.slf4j.Logger;
@@ -95,7 +96,7 @@ public class LlmClient {
         var httpClient = SpringAiOpenAiHttpClient.builder().build();
         var clientOptions = new ClientOptions.Builder()
                 .baseUrl(baseUrl)
-                .apiKey(apiKey)
+                .credential(BearerTokenCredential.create(apiKey))
                 .httpClient(httpClient)
                 .build();
         var openAiClient = new OpenAIClientImpl(clientOptions);

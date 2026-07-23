@@ -80,7 +80,7 @@ function PasswordStep({ onNext }: { onNext: () => void }) {
 }
 
 function LlmStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
-  const [form, setForm] = useState({ provider: 'OPENAI', modelName: 'deepseek-chat', apiKey: '', baseUrl: 'https://api.deepseek.com' });
+  const [form, setForm] = useState({ provider: 'OPENAI', modelName: '', apiKey: '', baseUrl: 'https://api.deepseek.com' });
   const [error, setError] = useState<string | null>(null);
   const [testMsg, setTestMsg] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -140,7 +140,7 @@ function LlmStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => void })
           </div>
           <div className="form-group">
             <label className="form-label">Model Name</label>
-            <input className="form-input" value={form.modelName} onChange={(e) => setForm({ ...form, modelName: e.target.value })} />
+            <input className="form-input" value={form.modelName} onChange={(e) => setForm({ ...form, modelName: e.target.value })} placeholder="e.g. gpt-4o" />
           </div>
         </div>
         <div className="form-group">
