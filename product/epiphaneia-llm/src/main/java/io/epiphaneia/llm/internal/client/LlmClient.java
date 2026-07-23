@@ -2,19 +2,25 @@ package io.epiphaneia.llm.internal.client;
 
 import io.epiphaneia.domain.internal.entity.LlmProvider;
 import io.epiphaneia.llm.internal.routing.ModelRouter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Component;
 
 /**
- * LLM invocation wrapper — configures the {@link ChatClient} per-provider
- * and delegates prompt execution.
+ * LLM invocation wrapper. Provider-specific configuration (API key, base URL,
+ * model name) is handled by Spring AI auto-configuration via environment
+ * variables ({@code DEEPSEEK_API_KEY}, {@code OPENAI_API_KEY}, etc.).
  * <p>
- * Each call accepts a {@link LlmProvider} so that provider-specific
- * settings (API key, model, base URL) are applied for that invocation.
- * Provider validation and key decryption are handled by {@link ModelRouter}.
+ * Multi-provider runtime switching is deferred — the current single-admin
+ * model uses one active provider configured through environment or Web UI.
+ * When multi-provider is needed, pre-register named
+ * {@link ChatClient.Builder} beans and select by provider key.
  */
 @Component
 public class LlmClient {
+
+    private static final Logger log = LoggerFactory.getLogger(LlmClient.class);
 
     private final ChatClient.Builder chatClientBuilder;
     private final ModelRouter modelRouter;
@@ -26,14 +32,11 @@ public class LlmClient {
 
     /**
      * Send a system + user prompt to the LLM.
-     *
-     * @param systemPrompt the system-level instructions
-     * @param userPrompt   the user-level query
-     * @param provider     the LLM provider configuration to use
-     * @return the LLM's text response
      */
     public String call(String systemPrompt, String userPrompt, LlmProvider provider) {
-        return buildClient(provider)
+        modelRouter.validateProvider(provider.getProvider());
+        log.debug("LLM call: provider={}, model={}", provider.getProvider(), provider.getModelName());
+        return chatClientBuilder.build()
                 .prompt()
                 .system(systemPrompt)
                 .user(userPrompt)
@@ -42,22 +45,22 @@ public class LlmClient {
     }
 
     /**
-     * Send a combined prompt (system context already merged) to the LLM.
-     *
-     * @param prompt   the prompt text
-     * @param provider the LLM provider configuration to use
-     * @return the LLM's text response
+     * Send a combined prompt to the LLM.
      */
     public String call(String prompt, LlmProvider provider) {
-        var p = provider != null ? provider : fallbackProvider();
-        return buildClient(p)
+        if (provider != null) {
+            modelRouter.validateProvider(provider.getProvider());
+        }
+        log.debug("LLM call: provider={}",
+                provider != null ? provider.getProvider() : "default");
+        return chatClientBuilder.build()
                 .prompt()
                 .user(prompt)
                 .call()
                 .content();
     }
 
-    /** Convenience overload for when no provider is configured (uses default ChatClient). */
+    /** Convenience overload using the auto-configured default ChatClient. */
     public String call(String prompt) {
         return chatClientBuilder.build()
                 .prompt()
@@ -66,15 +69,24 @@ public class LlmClient {
                 .content();
     }
 
-    private static LlmProvider fallbackProvider() {
-        LlmProvider p = new LlmProvider();
-        p.setProvider("CUSTOM");
-        return p;
-    }
-
-    private ChatClient buildClient(LlmProvider provider) {
-        // ponytail: per-provider URL/api-key config via AiConfig in server module.
-        // LlmClient delegates to the auto-configured ChatClient.Builder directly.
-        return chatClientBuilder.build();
+    /**
+     * Test connectivity for a provider configuration.
+     * Sends a "ping" prompt and returns true if the LLM responds.
+     */
+    public boolean testConnection(LlmProvider provider) {
+        try {
+            modelRouter.validateProvider(provider.getProvider());
+            String response = chatClientBuilder.build()
+                    .prompt()
+                    .user("Respond with exactly the word: OK")
+                    .call()
+                    .content();
+            log.info("LLM connection test for {}: success", provider.getProvider());
+            return response != null && response.contains("OK");
+        } catch (Exception e) {
+            log.info("LLM connection test for {} failed: {}",
+                    provider.getProvider(), e.getMessage());
+            return false;
+        }
     }
 }
