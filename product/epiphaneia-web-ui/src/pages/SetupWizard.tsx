@@ -80,7 +80,7 @@ function PasswordStep({ onNext }: { onNext: () => void }) {
 }
 
 function LlmStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }) {
-  const [form, setForm] = useState({ provider: 'OPENAI', modelName: '', apiKey: '', baseUrl: 'https://api.deepseek.com' });
+  const [form, setForm] = useState({ provider: 'OPENAI', modelName: '', apiKey: '', baseUrl: '' });
   const [error, setError] = useState<string | null>(null);
   const [testMsg, setTestMsg] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -149,7 +149,7 @@ function LlmStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => void })
         </div>
         <div className="form-group">
           <label className="form-label">Base URL</label>
-          <input className="form-input" value={form.baseUrl} onChange={(e) => setForm({ ...form, baseUrl: e.target.value })} />
+          <input className="form-input" value={form.baseUrl} onChange={(e) => setForm({ ...form, baseUrl: e.target.value })} placeholder="https://api.openai.com/v1 (default)" />
         </div>
         <button className="btn-primary" type="submit" disabled={saving}>
           {saving ? <LoadingSpinner /> : 'Save & Continue'}

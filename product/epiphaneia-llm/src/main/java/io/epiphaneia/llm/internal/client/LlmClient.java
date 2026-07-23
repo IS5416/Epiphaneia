@@ -1,25 +1,28 @@
 package io.epiphaneia.llm.internal.client;
 
-import com.openai.client.OpenAIClientImpl;
-import com.openai.core.ClientOptions;
-import com.openai.credential.BearerTokenCredential;
 import io.epiphaneia.domain.internal.entity.LlmProvider;
 import io.epiphaneia.llm.internal.routing.ModelRouter;
+import io.micrometer.observation.ObservationRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
-import org.springframework.ai.openai.http.okhttp.SpringAiOpenAiHttpClient;
+import org.springframework.ai.openai.setup.OpenAiSetup;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
+
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 
 /**
  * LLM invocation wrapper.
  * <p>
  * Provider-specific configuration (API key, base URL, model name) is read from
  * the {@link LlmProvider} entity — API keys are decrypted at call time and used
- * to build a dedicated {@link ChatClient} per request for the specified provider.
+ * to build a dedicated {@link ChatClient} per request via
+ * {@link OpenAiSetup#setupSyncClient}.
  * The auto-configured {@link ChatClient.Builder} (from env vars) is used as a
  * fallback for the no-provider convenience overloads.
  */
@@ -93,13 +96,25 @@ public class LlmClient {
         }
         String baseUrl = modelRouter.resolveBaseUrl(provider);
 
-        var httpClient = SpringAiOpenAiHttpClient.builder().build();
-        var clientOptions = new ClientOptions.Builder()
-                .baseUrl(baseUrl)
-                .credential(BearerTokenCredential.create(apiKey))
-                .httpClient(httpClient)
-                .build();
-        var openAiClient = new OpenAIClientImpl(clientOptions);
+        var openAiClient = OpenAiSetup.setupSyncClient(
+                baseUrl,
+                apiKey,
+                null,       // credential — use apiKey instead
+                null,       // microsoftDeploymentName
+                null,       // azureServiceVersion
+                null,       // organizationId
+                false,      // isMicrosoftFoundry
+                false,      // isGitHubModels
+                provider.getModelName(),
+                Duration.ofSeconds(60),
+                3,
+                null,       // proxy
+                Map.of(),   // customHeaders
+                ObservationRegistry.NOOP,
+                null,       // meterRegistry
+                List.of()   // httpClientBuilderCustomizers
+        );
+
         var chatModel = OpenAiChatModel.builder()
                 .openAiClient(openAiClient)
                 .options(OpenAiChatOptions.builder()

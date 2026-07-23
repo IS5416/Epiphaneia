@@ -252,7 +252,7 @@ function LlmTab() {
         </div>
         <div className="form-group">
           <label className="form-label">Base URL</label>
-          <input className="form-input" value={form.baseUrl} onChange={(e) => setForm({ ...form, baseUrl: e.target.value })} placeholder="https://api.deepseek.com" />
+          <input className="form-input" value={form.baseUrl} onChange={(e) => setForm({ ...form, baseUrl: e.target.value })} placeholder="https://api.openai.com/v1 (default)" />
         </div>
         <button className="btn-primary btn-sm" type="submit">Save</button>
         <button className="btn-ghost btn-sm" type="button" style={{ marginLeft: 8 }} onClick={handleTest}>Test Connection</button>
