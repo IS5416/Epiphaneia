@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
+import org.springframework.ai.openai.http.okhttp.SpringAiOpenAiHttpClient;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 
@@ -91,9 +92,11 @@ public class LlmClient {
         }
         String baseUrl = modelRouter.resolveBaseUrl(provider);
 
+        var httpClient = SpringAiOpenAiHttpClient.builder().build();
         var clientOptions = new ClientOptions.Builder()
                 .baseUrl(baseUrl)
                 .apiKey(apiKey)
+                .httpClient(httpClient)
                 .build();
         var openAiClient = new OpenAIClientImpl(clientOptions);
         var chatModel = OpenAiChatModel.builder()
