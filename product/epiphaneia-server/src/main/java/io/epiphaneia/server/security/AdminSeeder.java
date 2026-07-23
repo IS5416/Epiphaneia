@@ -47,12 +47,15 @@ public class AdminSeeder implements ApplicationRunner {
 
         adminRepository.save(admin);
 
-        Path credFile = Path.of(System.getProperty("java.io.tmpdir"), "epiphaneia-initial-admin.txt");
+        log.info("========================================");
+        log.info("INITIAL ADMIN: username=admin password={}", password);
+        log.info("========================================");
+
         try {
+            Path credFile = Path.of(System.getProperty("java.io.tmpdir"), "epiphaneia-initial-admin.txt");
             Files.writeString(credFile, "Username: admin\nPassword: " + password + "\n");
-            log.info("Initial admin credentials written to {}", credFile.toAbsolutePath());
         } catch (java.io.IOException e) {
-            log.error("Failed to write initial admin credentials: {}", e.getMessage());
+            log.warn("Failed to write credential file (non-fatal): {}", e.getMessage());
         }
     }
 
