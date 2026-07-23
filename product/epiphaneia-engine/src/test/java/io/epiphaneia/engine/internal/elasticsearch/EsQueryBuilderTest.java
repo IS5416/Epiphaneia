@@ -55,7 +55,7 @@ class EsQueryBuilderTest {
     void escapeSpecialChars() {
         String result = builder.buildSearchQuery("log: \"error\" in \\path",
                 "now-1h", "now", 10);
-        assertTrue(result.contains("log: \\\"error\\\" in \\\\path"));
+        assertTrue(result.contains("log\\: \\\"error\\\" in \\\\path"));
     }
 
     @Test

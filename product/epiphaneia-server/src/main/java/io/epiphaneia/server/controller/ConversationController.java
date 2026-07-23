@@ -1,10 +1,10 @@
 package io.epiphaneia.server.controller;
 
-import io.epiphaneia.agent.api.model.Conversation;
+import io.epiphaneia.domain.internal.entity.Conversation;
 import io.epiphaneia.agent.api.ReportSynthesizer;
-import io.epiphaneia.agent.api.model.Application;
-import io.epiphaneia.agent.api.repository.ApplicationRepository;
-import io.epiphaneia.agent.api.repository.ConversationRepository;
+import io.epiphaneia.domain.internal.entity.Application;
+import io.epiphaneia.domain.internal.repository.ApplicationRepository;
+import io.epiphaneia.domain.internal.repository.ConversationRepository;
 import io.epiphaneia.server.dto.*;
 import io.epiphaneia.server.mapper.ConversationMapper;
 import io.epiphaneia.server.skill.DiagnosisSkill;

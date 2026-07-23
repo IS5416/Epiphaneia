@@ -42,7 +42,7 @@ public class EsQueryBuilder {
                 }
                 """.formatted(
                 queryString != null && !queryString.isBlank()
-                        ? "{\"query_string\": {\"query\": \"" + escape(queryString) + "\"}}"
+                        ? "{\"query_string\": {\"query\": \"" + escapeLucene(queryString) + "\"}}"
                         : "{\"match_all\": {}}",
                 escape(startTime), escape(endTime),
                 size > 0 ? size : DEFAULT_SIZE);

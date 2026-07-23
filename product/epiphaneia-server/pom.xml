@@ -21,9 +21,12 @@
         </dependency>
         <dependency>
             <groupId>io.epiphaneia</groupId>
-            <artifactId>epiphaneia-connector</artifactId>
+            <artifactId>epiphaneia-domain</artifactId>
         </dependency>
-        <!-- connector 传递 infra → agent-core 也可见 infra/api 的 SPI 类型 -->
+        <dependency>
+            <groupId>io.epiphaneia</groupId>
+            <artifactId>epiphaneia-llm</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

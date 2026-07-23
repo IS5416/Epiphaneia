@@ -1,0 +1,30 @@
+Synthesize a diagnostic report from the following investigation:
+
+Application: {{applicationName}}
+Question: {{question}}
+Duration: {{duration}}
+
+ROOT CAUSE HYPOTHESES:
+{{hypotheses}}
+
+COLLECTED EVIDENCE:
+{{evidence}}
+
+FIX SUGGESTIONS:
+{{suggestions}}
+
+RISK ASSESSMENT:
+Level: {{riskLevel}}
+Impact: {{riskImpact}}
+Urgency: {{riskUrgency}}
+
+Produce a structured Markdown report with these sections:
+# Diagnostic Report
+## Summary
+## Timeline
+## Evidence Collected
+## Root Cause Analysis
+## Recommendations
+## Risk Assessment
+
+Be concise and evidence-based. Include specific metric values and timestamps where available.

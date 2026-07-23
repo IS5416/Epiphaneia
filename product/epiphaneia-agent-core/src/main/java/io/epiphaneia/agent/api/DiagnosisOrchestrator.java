@@ -1,4 +1,7 @@
 package io.epiphaneia.agent.api;
+
+import io.epiphaneia.llm.api.DiagnosisSseEventPublisher;
+
 public interface DiagnosisOrchestrator {
-    Object execute(Object conversation, String question);
+    void execute(DiagnosisContext ctx, DiagnosisSseEventPublisher publisher);
 }

@@ -44,6 +44,7 @@ export function connectSse(
       let buffer = '';
       let eventType = '';
       let eventData = '';
+      let doneReceived = false;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -59,7 +60,8 @@ export function connectSse(
           } else if (line.startsWith('data:')) {
             eventData += (eventData ? '\n' : '') + line.slice(5).trim();
           } else if (line === '' && eventType && eventData) {
-            dispatchSseEvent(eventType, eventData, callbacks);
+            dispatchSseEvent(eventType, eventData, callbacks, { doneReceived });
+            if (eventType === 'done') doneReceived = true;
             eventType = '';
             eventData = '';
           }
@@ -68,7 +70,12 @@ export function connectSse(
 
       // flush any remaining partial event
       if (eventType && eventData) {
-        dispatchSseEvent(eventType, eventData, callbacks);
+        dispatchSseEvent(eventType, eventData, callbacks, { doneReceived });
+        if (eventType === 'done') doneReceived = true;
+      }
+
+      if (!doneReceived && !controller.signal.aborted) {
+        callbacks.onClose?.();
       }
     })
     .catch((err) => {
@@ -84,6 +91,7 @@ function dispatchSseEvent(
   type: string,
   data: string,
   callbacks: SseCallbacks,
+  _flags: { doneReceived: boolean },
 ) {
   try {
     const parsed = JSON.parse(data);

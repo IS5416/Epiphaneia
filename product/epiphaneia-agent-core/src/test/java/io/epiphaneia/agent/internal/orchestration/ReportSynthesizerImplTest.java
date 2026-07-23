@@ -1,11 +1,11 @@
 package io.epiphaneia.agent.internal.orchestration;
 
-import io.epiphaneia.agent.api.model.*;
-import io.epiphaneia.agent.api.repository.EvidenceRepository;
-import io.epiphaneia.agent.api.repository.FixSuggestionRepository;
-import io.epiphaneia.agent.api.repository.RootCauseHypothesisRepository;
-import io.epiphaneia.agent.internal.llm.LlmClient;
-import io.epiphaneia.agent.internal.llm.PromptTemplateManager;
+import io.epiphaneia.domain.internal.entity.*;
+import io.epiphaneia.domain.internal.repository.EvidenceRepository;
+import io.epiphaneia.domain.internal.repository.FixSuggestionRepository;
+import io.epiphaneia.domain.internal.repository.RootCauseHypothesisRepository;
+import io.epiphaneia.llm.internal.client.LlmClient;
+import io.epiphaneia.llm.internal.template.PromptTemplateManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -112,13 +112,6 @@ class ReportSynthesizerImplTest {
 
         String result = reportSynthesizer.synthesize(conv);
         assertTrue(result.contains("No diagnosis results available"));
-    }
-
-    @Test
-    @DisplayName("non-Conversation input: returns error message")
-    void synthesizeNonConversationObject() {
-        String result = reportSynthesizer.synthesize("not a conversation");
-        assertTrue(result.contains("Unable to synthesize report"));
     }
 
     @Test

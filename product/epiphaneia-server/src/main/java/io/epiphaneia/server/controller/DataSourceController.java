@@ -1,7 +1,7 @@
 package io.epiphaneia.server.controller;
 
-import io.epiphaneia.agent.api.model.DataSource;
-import io.epiphaneia.agent.api.repository.DataSourceRepository;
+import io.epiphaneia.domain.internal.entity.DataSource;
+import io.epiphaneia.domain.internal.repository.DataSourceRepository;
 import io.epiphaneia.server.dto.*;
 import io.epiphaneia.server.mapper.DataSourceMapper;
 import jakarta.validation.Valid;

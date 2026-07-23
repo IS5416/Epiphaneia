@@ -1,6 +1,6 @@
 package io.epiphaneia.agent.api.repository;
 
-import io.epiphaneia.agent.api.model.DataSource;
+import io.epiphaneia.domain.internal.entity.DataSource;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

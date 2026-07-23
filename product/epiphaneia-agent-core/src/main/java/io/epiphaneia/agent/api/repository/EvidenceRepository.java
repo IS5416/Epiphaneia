@@ -1,7 +1,7 @@
 package io.epiphaneia.agent.api.repository;
 
-import io.epiphaneia.agent.api.model.Evidence;
-import io.epiphaneia.agent.api.model.Message;
+import io.epiphaneia.domain.internal.entity.Evidence;
+import io.epiphaneia.domain.internal.entity.Message;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

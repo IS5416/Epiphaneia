@@ -1,7 +1,7 @@
 package io.epiphaneia.server.controller;
 
-import io.epiphaneia.agent.api.model.Application;
-import io.epiphaneia.agent.api.repository.ApplicationRepository;
+import io.epiphaneia.domain.internal.entity.Application;
+import io.epiphaneia.domain.internal.repository.ApplicationRepository;
 import io.epiphaneia.server.dto.*;
 import io.epiphaneia.server.mapper.ApplicationMapper;
 import jakarta.validation.Valid;

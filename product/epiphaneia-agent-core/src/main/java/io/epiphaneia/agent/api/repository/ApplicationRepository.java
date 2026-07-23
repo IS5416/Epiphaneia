@@ -1,6 +1,6 @@
 package io.epiphaneia.agent.api.repository;
 
-import io.epiphaneia.agent.api.model.Application;
+import io.epiphaneia.domain.internal.entity.Application;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

@@ -12,14 +12,25 @@
 
     <artifactId>epiphaneia-agent-core</artifactId>
     <name>Epiphaneia Agent Core</name>
-    <description>Agent orchestration, LLM integration, domain model, repositories</description>
+    <description>Diagnosis orchestration, state machine, report synthesis</description>
 
     <dependencies>
         <dependency>
             <groupId>io.epiphaneia</groupId>
+            <artifactId>epiphaneia-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.epiphaneia</groupId>
             <artifactId>epiphaneia-engine</artifactId>
         </dependency>
-        <!-- engine 传递依赖 infra，agent-core 通过 infra/api 获得 Connector SPI 类型 + ConnectorRegistry -->
+        <dependency>
+            <groupId>io.epiphaneia</groupId>
+            <artifactId>epiphaneia-connector</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.epiphaneia</groupId>
+            <artifactId>epiphaneia-llm</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

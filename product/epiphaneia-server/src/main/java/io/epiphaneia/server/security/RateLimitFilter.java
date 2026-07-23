@@ -62,9 +62,15 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private static String getClientIp(HttpServletRequest request) {
         String xff = request.getHeader("X-Forwarded-For");
-        if (xff != null && !xff.isBlank()) {
+        String remoteAddr = request.getRemoteAddr();
+        if (xff != null && !xff.isBlank() && isTrustedProxy(remoteAddr)) {
             return xff.split(",")[0].trim();
         }
-        return request.getRemoteAddr();
+        return remoteAddr;
+    }
+
+    private static boolean isTrustedProxy(String addr) {
+        if ("127.0.0.1".equals(addr)) return true;
+        return addr.startsWith("172.") || addr.startsWith("10.");
     }
 }

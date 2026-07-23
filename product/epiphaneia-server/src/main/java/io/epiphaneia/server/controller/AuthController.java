@@ -1,12 +1,13 @@
 package io.epiphaneia.server.controller;
 
-import io.epiphaneia.agent.api.model.Admin;
-import io.epiphaneia.agent.api.model.ApiToken;
-import io.epiphaneia.agent.api.repository.AdminRepository;
-import io.epiphaneia.agent.api.repository.ApiTokenRepository;
+import io.epiphaneia.domain.internal.entity.Admin;
+import io.epiphaneia.domain.internal.entity.ApiToken;
+import io.epiphaneia.domain.internal.repository.AdminRepository;
+import io.epiphaneia.domain.internal.repository.ApiTokenRepository;
 import io.epiphaneia.server.dto.*;
 import io.epiphaneia.server.mapper.ApiTokenMapper;
-import io.epiphaneia.server.security.BearerTokenFilter;
+import io.epiphaneia.server.security.TokenHasher;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -40,7 +41,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest req, HttpSession session) {
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest req,
+                                                            HttpServletRequest request, HttpSession session) {
         Admin admin = adminRepo.findByUsername(req.username())
                 .orElse(null);
 
@@ -49,7 +51,9 @@ public class AuthController {
                     .body(ApiResponse.error("INVALID_CREDENTIALS", "Invalid credentials"));
         }
 
-        session.setAttribute("ADMIN_ID", admin.getId());
+        session.invalidate();
+        HttpSession newSession = request.getSession(true);
+        newSession.setAttribute("ADMIN_ID", admin.getId());
 
         return ResponseEntity.ok(ApiResponse.ok(
                 new LoginResponse(null, null, admin.isMustChangePassword())));
@@ -96,7 +100,7 @@ public class AuthController {
         ApiToken token = new ApiToken();
         token.setName(req.name());
         token.setPrefix(rawToken.substring(0, 12));
-        token.setTokenHash(BearerTokenFilter.sha256(rawToken));
+        token.setTokenHash(TokenHasher.sha256(rawToken));
         token.setAdmin(admin);
         tokenRepo.save(token);
 
@@ -111,6 +115,12 @@ public class AuthController {
                 .orElseThrow(() -> new IllegalArgumentException("Token not found"));
         token.setRevokedAt(Instant.now());
         tokenRepo.save(token);
+    }
+
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logout(HttpSession session) {
+        session.invalidate();
     }
 
     private static String generateRandomString(int length) {

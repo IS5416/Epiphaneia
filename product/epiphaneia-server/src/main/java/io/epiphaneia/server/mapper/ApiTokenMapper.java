@@ -1,6 +1,6 @@
 package io.epiphaneia.server.mapper;
 
-import io.epiphaneia.agent.api.model.ApiToken;
+import io.epiphaneia.domain.internal.entity.ApiToken;
 import io.epiphaneia.server.dto.ApiTokenResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

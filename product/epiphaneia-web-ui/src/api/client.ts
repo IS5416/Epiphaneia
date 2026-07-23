@@ -21,6 +21,11 @@ function redirectOn401(): void {
   }
 }
 
+function getCsrfToken(): string {
+  const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : '';
+}
+
 async function request<T>(
   path: string,
   options: RequestInit = {},
@@ -30,61 +35,62 @@ async function request<T>(
     headers['Content-Type'] = 'application/json';
   }
 
-  const res = await fetch(`${BASE}${path}`, {
-    credentials: 'same-origin',
-    headers: { ...headers, ...(options.headers as Record<string, string> | undefined) },
-    ...options,
-  });
-
-  if (res.status === UNAUTHORIZED) {
-    redirectOn401();
-    throw new ApiError(UNAUTHORIZED, 'UNAUTHORIZED', 'Session expired');
+  if (options.method && options.method !== 'GET' && options.method !== 'HEAD') {
+    const csrf = getCsrfToken();
+    if (csrf) headers['X-XSRF-TOKEN'] = csrf;
   }
 
-  if (res.status === 204) {
-    return undefined as T;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30_000);
+
+  try {
+    const res = await fetch(`${BASE}${path}`, {
+      credentials: 'same-origin',
+      headers: { ...headers, ...(options.headers as Record<string, string> | undefined) },
+      signal: controller.signal,
+      ...options,
+    });
+    clearTimeout(timeoutId);
+
+    if (res.status === UNAUTHORIZED) {
+      redirectOn401();
+      throw new ApiError(UNAUTHORIZED, 'UNAUTHORIZED', 'Session expired');
+    }
+
+    if (res.status === 204) {
+      return undefined as T;
+    }
+
+    const body = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      const error = (body as ApiResponse<never>).error;
+      throw new ApiError(
+        res.status,
+        error?.code ?? 'UNKNOWN',
+        error?.message ?? `HTTP ${res.status}`,
+      );
+    }
+
+    const wrapped = body as ApiResponse<T>;
+    if (wrapped.error) {
+      throw new ApiError(res.status, wrapped.error.code, wrapped.error.message);
+    }
+
+    return wrapped.data as T;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if ((err as Error).name === 'AbortError') {
+      throw new ApiError(0, 'TIMEOUT', 'Request timed out');
+    }
+    throw err;
   }
-
-  const body = await res.json().catch(() => ({}));
-
-  if (!res.ok) {
-    const error = (body as ApiResponse<never>).error;
-    throw new ApiError(
-      res.status,
-      error?.code ?? 'UNKNOWN',
-      error?.message ?? `HTTP ${res.status}`,
-    );
-  }
-
-  const wrapped = body as ApiResponse<T>;
-  if (wrapped.error) {
-    throw new ApiError(res.status, wrapped.error.code, wrapped.error.message);
-  }
-
-  return wrapped.data as T;
 }
 
 async function getList<T>(
   path: string,
 ): Promise<ApiListResponse<T>> {
-  const res = await fetch(`${BASE}${path}`, { credentials: 'same-origin' });
-
-  if (res.status === UNAUTHORIZED) {
-    redirectOn401();
-    throw new ApiError(UNAUTHORIZED, 'UNAUTHORIZED', 'Session expired');
-  }
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    const error = (body as ApiResponse<never>).error;
-    throw new ApiError(
-      res.status,
-      error?.code ?? 'UNKNOWN',
-      error?.message ?? `HTTP ${res.status}`,
-    );
-  }
-
-  return res.json() as Promise<ApiListResponse<T>>;
+  return request<ApiListResponse<T>>(path);
 }
 
 export { request, getList, ApiError, BASE };

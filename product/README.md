@@ -53,9 +53,11 @@ cd epiphaneia-web-ui && npm run build  # frontend
 | Module | Purpose |
 |--------|---------|
 | epiphaneia-infra | Connector SPI, AES-256-GCM encryption, exceptions |
-| epiphaneia-connector | Prometheus/Elasticsearch connector implementations |
+| epiphaneia-domain | Domain entities and Spring Data repositories |
 | epiphaneia-engine | PromQL/ES DSL query builders, Actuator probe |
-| epiphaneia-agent-core | Domain model, repositories, ReAct orchestration, LLM routing |
+| epiphaneia-connector | Prometheus/Elasticsearch connector implementations |
+| epiphaneia-llm | LLM client, model routing, prompt templates |
+| epiphaneia-agent-core | Diagnosis orchestration, ReAct loop, state machine, report synthesis |
 | epiphaneia-server | Spring Boot entry, REST API, SSE, security filters |
 | epiphaneia-web-ui | React 19 + Vite 6 frontend |
 

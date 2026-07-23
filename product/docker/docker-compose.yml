@@ -12,6 +12,15 @@ services:
     restart: unless-stopped
     networks:
       - epiphaneia-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   app:
     build:
@@ -41,6 +50,15 @@ services:
     restart: unless-stopped
     networks:
       - epiphaneia-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   postgres:
     image: postgres:16-alpine
@@ -62,6 +80,15 @@ services:
     restart: unless-stopped
     networks:
       - epiphaneia-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   pg_data:

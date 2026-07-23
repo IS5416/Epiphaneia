@@ -1,7 +1,7 @@
 package io.epiphaneia.agent.api.repository;
 
-import io.epiphaneia.agent.api.model.Conversation;
-import io.epiphaneia.agent.api.model.Message;
+import io.epiphaneia.domain.internal.entity.Conversation;
+import io.epiphaneia.domain.internal.entity.Message;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

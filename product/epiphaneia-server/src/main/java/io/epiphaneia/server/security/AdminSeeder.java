@@ -1,7 +1,7 @@
 package io.epiphaneia.server.security;
 
-import io.epiphaneia.agent.api.model.Admin;
-import io.epiphaneia.agent.api.repository.AdminRepository;
+import io.epiphaneia.domain.internal.entity.Admin;
+import io.epiphaneia.domain.internal.repository.AdminRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -9,6 +9,8 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.util.Base64;
 
@@ -45,12 +47,13 @@ public class AdminSeeder implements ApplicationRunner {
 
         adminRepository.save(admin);
 
-        log.info("============================================");
-        log.info("  Epiphaneia initial admin credentials:");
-        log.info("  Username: admin");
-        log.info("  Password: {}", password);
-        log.info("  You will be required to change this.");
-        log.info("============================================");
+        Path credFile = Path.of(System.getProperty("java.io.tmpdir"), "epiphaneia-initial-admin.txt");
+        try {
+            Files.writeString(credFile, "Username: admin\nPassword: " + password + "\n");
+            log.info("Initial admin credentials written to {}", credFile.toAbsolutePath());
+        } catch (java.io.IOException e) {
+            log.error("Failed to write initial admin credentials: {}", e.getMessage());
+        }
     }
 
     private static String generatePassword() {

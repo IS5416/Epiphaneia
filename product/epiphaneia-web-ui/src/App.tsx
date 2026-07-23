@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
+import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import SetupWizard from './pages/SetupWizard';
 import DiagnosisWorkspace from './pages/DiagnosisWorkspace';
@@ -14,10 +15,10 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/setup" element={<SetupWizard />} />
         <Route element={<Layout />}>
-          <Route path="/workspace" element={<DiagnosisWorkspace />} />
-          <Route path="/report/:id" element={<ReportView />} />
-          <Route path="/history" element={<HistoryPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/workspace" element={<ProtectedRoute><DiagnosisWorkspace /></ProtectedRoute>} />
+          <Route path="/report/:id" element={<ProtectedRoute><ReportView /></ProtectedRoute>} />
+          <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
         </Route>
         <Route path="*" element={<Navigate to="/workspace" replace />} />
       </Routes>

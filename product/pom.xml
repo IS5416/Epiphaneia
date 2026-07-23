@@ -21,8 +21,10 @@
 
     <modules>
         <module>epiphaneia-infra</module>
-        <module>epiphaneia-connector</module>
+        <module>epiphaneia-domain</module>
         <module>epiphaneia-engine</module>
+        <module>epiphaneia-connector</module>
+        <module>epiphaneia-llm</module>
         <module>epiphaneia-agent-core</module>
         <module>epiphaneia-server</module>
     </modules>
@@ -56,6 +58,16 @@
             <dependency>
                 <groupId>io.epiphaneia</groupId>
                 <artifactId>epiphaneia-engine</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.epiphaneia</groupId>
+                <artifactId>epiphaneia-domain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.epiphaneia</groupId>
+                <artifactId>epiphaneia-llm</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -120,7 +132,7 @@
                 <version>${owasp-dependency-check.version}</version>
                 <configuration>
                     <failBuildOnCVSS>7</failBuildOnCVSS>
-                    <skip>true</skip>
+                    <skip>false</skip>
                 </configuration>
                 <executions>
                     <execution>

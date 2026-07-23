@@ -1,9 +1,9 @@
 package io.epiphaneia.server.security;
 
-import io.epiphaneia.agent.api.model.ApiToken;
-import io.epiphaneia.agent.api.model.Admin;
-import io.epiphaneia.agent.api.repository.ApiTokenRepository;
-import io.epiphaneia.agent.api.repository.AdminRepository;
+import io.epiphaneia.domain.internal.entity.ApiToken;
+import io.epiphaneia.domain.internal.entity.Admin;
+import io.epiphaneia.domain.internal.repository.ApiTokenRepository;
+import io.epiphaneia.domain.internal.repository.AdminRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,9 +14,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,7 +55,7 @@ public class BearerTokenFilter extends OncePerRequestFilter {
         }
 
         String rawToken = header.substring(BEARER_PREFIX.length()).trim();
-        String tokenHash = sha256(rawToken);
+        String tokenHash = TokenHasher.sha256(rawToken);
 
         Optional<ApiToken> token = apiTokenRepository.findByTokenHash(tokenHash);
         if (token.isEmpty() || !token.get().isValid()) {
@@ -74,13 +71,4 @@ public class BearerTokenFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
-    public static String sha256(String input) {
-        try {
-            byte[] hash = MessageDigest.getInstance("SHA-256").digest(
-                    input.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(hash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA-256 not available", e);
-        }
-    }
 }

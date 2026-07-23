@@ -1,11 +1,12 @@
 package io.epiphaneia.agent.internal.orchestration;
 
-import io.epiphaneia.agent.api.DiagnosisSseEventPublisher;
-import io.epiphaneia.agent.api.model.*;
-import io.epiphaneia.agent.api.repository.*;
-import io.epiphaneia.agent.internal.llm.LlmClient;
-import io.epiphaneia.agent.internal.llm.ModelRouter;
-import io.epiphaneia.agent.internal.llm.PromptTemplateManager;
+import io.epiphaneia.agent.api.DiagnosisContext;
+import io.epiphaneia.llm.api.DiagnosisSseEventPublisher;
+import io.epiphaneia.domain.internal.entity.*;
+import io.epiphaneia.domain.internal.repository.*;
+import io.epiphaneia.llm.internal.client.LlmClient;
+import io.epiphaneia.llm.internal.routing.ModelRouter;
+import io.epiphaneia.llm.internal.template.PromptTemplateManager;
 import io.epiphaneia.infra.api.ConnectorRegistry;
 import io.epiphaneia.infra.api.connector.Connector;
 import io.epiphaneia.infra.api.connector.QueryResult;

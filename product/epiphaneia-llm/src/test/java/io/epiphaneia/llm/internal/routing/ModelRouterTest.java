@@ -1,6 +1,6 @@
-package io.epiphaneia.agent.internal.llm;
+package io.epiphaneia.llm.internal.routing;
 
-import io.epiphaneia.agent.api.model.LlmProvider;
+import io.epiphaneia.domain.internal.entity.LlmProvider;
 import io.epiphaneia.infra.api.EncryptionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

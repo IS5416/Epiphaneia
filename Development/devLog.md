@@ -14,3 +14,4 @@
 | 2026-07-22 | 01 | Phase 4 启动准备完成（SB4.1.0 兼容、依赖修复、首次启动验证） | [devLog/2026-07-22-01-phase4-preparation.md](devLog/2026-07-22-01-phase4-preparation.md) |
 | 2026-07-22 | 02 | Phase 4 Web UI 完成（6 页面 + SSE + 审查修复） | [devLog/2026-07-22-02-phase4-web-ui.md](devLog/2026-07-22-02-phase4-web-ui.md) |
 | 2026-07-22 | 03 | Phase 5 Docker 收尾 + 文档完成 | [devLog/2026-07-22-03-phase5-docker-docs.md](devLog/2026-07-22-03-phase5-docker-docs.md) |
+| 2026-07-23 | 01 | 全项目审查 + 架构重构 (5→7模块, 67项修复) | [devLog/2026-07-23-01-architecture-restructuring.md](devLog/2026-07-23-01-architecture-restructuring.md) |

@@ -1,9 +1,9 @@
 package io.epiphaneia.server.controller;
 
-import io.epiphaneia.agent.api.repository.AdminRepository;
-import io.epiphaneia.agent.api.repository.ApplicationRepository;
-import io.epiphaneia.agent.api.repository.DataSourceRepository;
-import io.epiphaneia.agent.api.repository.LlmProviderRepository;
+import io.epiphaneia.domain.internal.repository.AdminRepository;
+import io.epiphaneia.domain.internal.repository.ApplicationRepository;
+import io.epiphaneia.domain.internal.repository.DataSourceRepository;
+import io.epiphaneia.domain.internal.repository.LlmProviderRepository;
 import io.epiphaneia.server.dto.ApiResponse;
 import io.epiphaneia.server.dto.SystemStatusResponse;
 import org.springframework.web.bind.annotation.GetMapping;

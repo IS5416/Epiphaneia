@@ -1,6 +1,6 @@
 package io.epiphaneia.agent.internal.llm;
 
-import io.epiphaneia.agent.api.model.LlmProvider;
+import io.epiphaneia.domain.internal.entity.LlmProvider;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Component;
 

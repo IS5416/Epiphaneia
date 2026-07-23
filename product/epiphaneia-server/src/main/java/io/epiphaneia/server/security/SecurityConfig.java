@@ -1,7 +1,7 @@
 package io.epiphaneia.server.security;
 
-import io.epiphaneia.agent.api.repository.AdminRepository;
-import io.epiphaneia.agent.api.repository.ApiTokenRepository;
+import io.epiphaneia.domain.internal.repository.AdminRepository;
+import io.epiphaneia.domain.internal.repository.ApiTokenRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -31,7 +31,6 @@ public class SecurityConfig {
         var rateLimitFilter = new RateLimitFilter();
 
         return http
-            .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(sessionFilter, UsernamePasswordAuthenticationFilter.class)

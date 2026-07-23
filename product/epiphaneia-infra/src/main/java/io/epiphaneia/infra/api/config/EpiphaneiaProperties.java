@@ -1,4 +1,4 @@
-package io.epiphaneia.infra.internal.config;
+package io.epiphaneia.infra.api.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

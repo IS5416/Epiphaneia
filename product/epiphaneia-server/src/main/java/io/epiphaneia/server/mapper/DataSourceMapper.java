@@ -1,6 +1,6 @@
 package io.epiphaneia.server.mapper;
 
-import io.epiphaneia.agent.api.model.DataSource;
+import io.epiphaneia.domain.internal.entity.DataSource;
 import io.epiphaneia.server.dto.DataSourceRequest;
 import io.epiphaneia.server.dto.DataSourceResponse;
 import org.mapstruct.Mapper;

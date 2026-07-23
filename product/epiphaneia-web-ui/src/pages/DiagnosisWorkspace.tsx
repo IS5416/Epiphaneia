@@ -107,6 +107,7 @@ export default function DiagnosisWorkspace() {
         },
         onClose: () => {
           setSseRunning(false);
+          setSseLines((prev) => [...prev, { type: 'error' as const, text: 'Connection lost. Server may still be processing.', conversationId: sseConvoId ?? undefined }]);
         },
       });
 

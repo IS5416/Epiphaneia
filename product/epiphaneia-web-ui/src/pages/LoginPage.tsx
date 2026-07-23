@@ -41,7 +41,9 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
+            <label htmlFor="username" className="form-label">Username</label>
             <input
+              id="username"
               className="form-input"
               type="text"
               value={username}
@@ -50,7 +52,9 @@ export default function LoginPage() {
             />
           </div>
           <div className="form-group">
+            <label htmlFor="password" className="form-label">Password</label>
             <input
+              id="password"
               className="form-input"
               type="password"
               value={password}

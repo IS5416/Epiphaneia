@@ -1,6 +1,6 @@
 package io.epiphaneia.server.mapper;
 
-import io.epiphaneia.agent.api.model.Application;
+import io.epiphaneia.domain.internal.entity.Application;
 import io.epiphaneia.server.dto.ApplicationRequest;
 import io.epiphaneia.server.dto.ApplicationResponse;
 import org.mapstruct.Mapper;

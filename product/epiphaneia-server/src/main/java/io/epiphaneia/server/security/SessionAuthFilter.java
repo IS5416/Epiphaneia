@@ -1,7 +1,7 @@
 package io.epiphaneia.server.security;
 
-import io.epiphaneia.agent.api.model.Admin;
-import io.epiphaneia.agent.api.repository.AdminRepository;
+import io.epiphaneia.domain.internal.entity.Admin;
+import io.epiphaneia.domain.internal.repository.AdminRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

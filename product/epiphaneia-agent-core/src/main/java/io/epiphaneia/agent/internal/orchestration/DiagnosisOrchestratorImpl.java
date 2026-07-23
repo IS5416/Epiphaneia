@@ -1,12 +1,13 @@
 package io.epiphaneia.agent.internal.orchestration;
 
+import io.epiphaneia.agent.api.DiagnosisContext;
 import io.epiphaneia.agent.api.DiagnosisOrchestrator;
-import io.epiphaneia.agent.api.DiagnosisSseEventPublisher;
-import io.epiphaneia.agent.api.model.*;
-import io.epiphaneia.agent.api.repository.*;
-import io.epiphaneia.agent.internal.llm.LlmClient;
-import io.epiphaneia.agent.internal.llm.ModelRouter;
-import io.epiphaneia.agent.internal.llm.PromptTemplateManager;
+import io.epiphaneia.llm.api.DiagnosisSseEventPublisher;
+import io.epiphaneia.domain.internal.entity.*;
+import io.epiphaneia.domain.internal.repository.*;
+import io.epiphaneia.llm.internal.client.LlmClient;
+import io.epiphaneia.llm.internal.routing.ModelRouter;
+import io.epiphaneia.llm.internal.template.PromptTemplateManager;
 import io.epiphaneia.infra.api.ConnectorRegistry;
 import io.epiphaneia.infra.api.connector.Connector;
 import io.epiphaneia.infra.api.connector.QueryRequest;
@@ -56,18 +57,14 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
         this.suggestionRepo = suggestionRepo;
     }
 
-    @Override
-    @Transactional
-    public Object execute(Object conversation, String question) {
-        throw new UnsupportedOperationException("Use execute(DiagnosisContext, DiagnosisSseEventPublisher)");
-    }
-
     /**
      * Execute the full diagnosis pipeline.
      *
      * @param ctx       the diagnosis context
      * @param publisher SSE event publisher (use {@link DiagnosisSseEventPublisher#NOOP} if none)
      */
+    @Override
+    @Transactional
     public void execute(DiagnosisContext ctx, DiagnosisSseEventPublisher publisher) {
         if (publisher == null) publisher = DiagnosisSseEventPublisher.NOOP;
 

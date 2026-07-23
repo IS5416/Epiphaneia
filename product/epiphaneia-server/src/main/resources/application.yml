@@ -6,7 +6,8 @@ server:
       timeout: 30m
       cookie:
         http-only: true
-        same-site: lax
+        secure: true
+        same-site: strict
 
 spring:
   application:

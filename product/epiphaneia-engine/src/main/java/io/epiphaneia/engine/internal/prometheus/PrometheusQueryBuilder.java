@@ -27,7 +27,7 @@ public class PrometheusQueryBuilder {
         if (labels != null && !labels.isEmpty()) {
             sb.append("{");
             sb.append(labels.entrySet().stream()
-                    .map(e -> e.getKey() + "=\"" + e.getValue() + "\"")
+                    .map(e -> e.getKey() + "=\"" + escapeLabelValue(e.getValue()) + "\"")
                     .collect(Collectors.joining(",")));
             sb.append("}");
         }
@@ -52,7 +52,7 @@ public class PrometheusQueryBuilder {
         if (labels != null && !labels.isEmpty()) {
             sb.append("{");
             sb.append(labels.entrySet().stream()
-                    .map(e -> e.getKey() + "=\"" + e.getValue() + "\"")
+                    .map(e -> e.getKey() + "=\"" + escapeLabelValue(e.getValue()) + "\"")
                     .collect(Collectors.joining(",")));
             sb.append("}");
         }
@@ -68,11 +68,16 @@ public class PrometheusQueryBuilder {
         if (labels != null && !labels.isEmpty()) {
             base.append("{");
             base.append(labels.entrySet().stream()
-                    .map(e -> e.getKey() + "=\"" + e.getValue() + "\"")
+                    .map(e -> e.getKey() + "=\"" + escapeLabelValue(e.getValue()) + "\"")
                     .collect(Collectors.joining(",")));
             base.append("}");
         }
         base.append("[").append(window != null ? window : "5m").append("])");
         return base.toString();
+    }
+
+    private static String escapeLabelValue(String value) {
+        if (value == null) return "";
+        return value.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
     }
 }

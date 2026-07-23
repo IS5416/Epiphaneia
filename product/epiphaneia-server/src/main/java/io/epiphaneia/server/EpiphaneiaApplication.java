@@ -10,7 +10,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @SpringBootApplication
 @ComponentScan(basePackages = "io.epiphaneia")
 @EnableJpaRepositories(basePackages = "io.epiphaneia.agent.api.repository")
-@ConfigurationPropertiesScan(basePackages = "io.epiphaneia.infra.internal.config")
+@ConfigurationPropertiesScan(basePackages = "io.epiphaneia.infra.api.config")
 @EnableAsync
 public class EpiphaneiaApplication {
 

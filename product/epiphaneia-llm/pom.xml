@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.epiphaneia</groupId>
+        <artifactId>epiphaneia</artifactId>
+        <version>0.9.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>epiphaneia-llm</artifactId>
+    <name>Epiphaneia LLM</name>
+    <description>LLM client, model routing, and prompt template management</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.epiphaneia</groupId>
+            <artifactId>epiphaneia-infra</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.epiphaneia</groupId>
+            <artifactId>epiphaneia-domain</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-openai</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

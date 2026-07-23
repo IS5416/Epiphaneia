@@ -1,6 +1,6 @@
 package io.epiphaneia.infra.internal.crypto;
 
-import io.epiphaneia.infra.internal.config.EpiphaneiaProperties;
+import io.epiphaneia.infra.api.config.EpiphaneiaProperties;
 import io.epiphaneia.infra.internal.exception.InvalidConfigurationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,10 +1,10 @@
 package io.epiphaneia.server.mapper;
 
-import io.epiphaneia.agent.api.model.Conversation;
-import io.epiphaneia.agent.api.model.Evidence;
-import io.epiphaneia.agent.api.model.FixSuggestion;
-import io.epiphaneia.agent.api.model.Message;
-import io.epiphaneia.agent.api.model.RootCauseHypothesis;
+import io.epiphaneia.domain.internal.entity.Conversation;
+import io.epiphaneia.domain.internal.entity.Evidence;
+import io.epiphaneia.domain.internal.entity.FixSuggestion;
+import io.epiphaneia.domain.internal.entity.Message;
+import io.epiphaneia.domain.internal.entity.RootCauseHypothesis;
 import io.epiphaneia.server.dto.ConversationDetailResponse;
 import io.epiphaneia.server.dto.ConversationResponse;
 import io.epiphaneia.server.dto.EvidenceResponse;

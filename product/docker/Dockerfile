@@ -6,6 +6,8 @@ COPY epiphaneia-connector/pom.xml epiphaneia-connector/
 COPY epiphaneia-engine/pom.xml epiphaneia-engine/
 COPY epiphaneia-agent-core/pom.xml epiphaneia-agent-core/
 COPY epiphaneia-server/pom.xml epiphaneia-server/
+COPY mvnw ./
+COPY .mvn .mvn/
 RUN ./mvnw dependency:go-offline -pl epiphaneia-server -am
 COPY . .
 RUN ./mvnw package -DskipTests -pl epiphaneia-server -am

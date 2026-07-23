@@ -1,7 +1,7 @@
 package io.epiphaneia.infra.internal.crypto;
 
 import io.epiphaneia.infra.api.EncryptionService;
-import io.epiphaneia.infra.internal.config.EpiphaneiaProperties;
+import io.epiphaneia.infra.api.config.EpiphaneiaProperties;
 import io.epiphaneia.infra.internal.exception.InvalidConfigurationException;
 import org.springframework.stereotype.Service;
 

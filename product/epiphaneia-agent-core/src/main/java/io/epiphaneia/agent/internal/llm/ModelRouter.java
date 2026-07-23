@@ -1,7 +1,7 @@
 package io.epiphaneia.agent.internal.llm;
 
-import io.epiphaneia.agent.api.LlmProviderValidator;
-import io.epiphaneia.agent.api.model.LlmProvider;
+import io.epiphaneia.llm.api.LlmProviderValidator;
+import io.epiphaneia.domain.internal.entity.LlmProvider;
 import io.epiphaneia.infra.api.EncryptionService;
 import org.springframework.stereotype.Component;
 

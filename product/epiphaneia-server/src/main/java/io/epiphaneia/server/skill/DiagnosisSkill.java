@@ -1,10 +1,11 @@
 package io.epiphaneia.server.skill;
 
-import io.epiphaneia.agent.api.DiagnosisSseEventPublisher;
-import io.epiphaneia.agent.api.model.*;
-import io.epiphaneia.agent.api.repository.*;
-import io.epiphaneia.agent.internal.orchestration.DiagnosisContext;
-import io.epiphaneia.agent.internal.orchestration.DiagnosisOrchestratorImpl;
+import io.epiphaneia.llm.api.DiagnosisSseEventPublisher;
+import io.epiphaneia.domain.internal.entity.*;
+import io.epiphaneia.domain.internal.repository.*;
+import io.epiphaneia.agent.api.DiagnosisContext;
+import io.epiphaneia.agent.api.DiagnosisOrchestrator;
+import io.epiphaneia.agent.internal.orchestration.DiagnosisStateMachine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -36,11 +37,11 @@ public class DiagnosisSkill {
     private final ApplicationRepository appRepo;
     private final DataSourceRepository dsRepo;
     private final LlmProviderRepository llmRepo;
-    private final DiagnosisOrchestratorImpl orchestrator;
+    private final DiagnosisOrchestrator orchestrator;
 
     public DiagnosisSkill(ConversationRepository conversationRepo, MessageRepository messageRepo,
                            ApplicationRepository appRepo, DataSourceRepository dsRepo,
-                           LlmProviderRepository llmRepo, DiagnosisOrchestratorImpl orchestrator) {
+                           LlmProviderRepository llmRepo, DiagnosisOrchestrator orchestrator) {
         this.conversationRepo = conversationRepo;
         this.messageRepo = messageRepo;
         this.appRepo = appRepo;
@@ -98,11 +99,7 @@ public class DiagnosisSkill {
     private boolean hasActiveDiagnosis(Conversation conversation) {
         List<Message> messages = messageRepo.findByConversationOrderByCreatedAtAsc(conversation);
         return messages.stream().anyMatch(m ->
-                m.getDiagnosisState() != null && isActive(m.getDiagnosisState()));
-    }
-
-    private static boolean isActive(String state) {
-        return state.equals("CREATED") || state.equals("PLANNING")
-                || state.equals("QUERYING") || state.equals("ANALYZING");
+                m.getDiagnosisState() != null &&
+                DiagnosisStateMachine.isActive(DiagnosisStateMachine.State.valueOf(m.getDiagnosisState())));
     }
 }
