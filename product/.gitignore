@@ -17,7 +17,6 @@ epiphaneia-web-ui/dist/
 # Environment
 .env
 !.env.example
-**/application-local.yml
 
 # OS
 .DS_Store

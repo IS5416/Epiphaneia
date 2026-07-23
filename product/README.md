@@ -21,10 +21,15 @@ docker compose -f docker/docker-compose.yml up -d
 ## Local Development
 
 ```bash
-# Backend (requires PostgreSQL + application-local.yml)
+# Prerequisites: PostgreSQL on localhost:5432 with database "epiphaneia"
+# Create .env from template: cp .env.example .env → fill in DB_PASSWORD + EPIPHANEIA_ENCRYPTION_KEY
+
+# Backend
 cd product
-$env:SPRING_PROFILES_ACTIVE="local"
 ./mvnw spring-boot:run -pl epiphaneia-server
+# Reads .env via spring-boot-dotenv or set env vars manually:
+#   $env:SPRING_DATASOURCE_PASSWORD="your-password"
+#   $env:EPIPHANEIA_ENCRYPTION_KEY="your-hex-key"
 
 # Frontend (separate terminal)
 cd product/epiphaneia-web-ui
