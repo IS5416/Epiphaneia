@@ -31,6 +31,7 @@ public class SecurityConfig {
         var rateLimitFilter = new RateLimitFilter();
 
         return http
+            .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(sessionFilter, UsernamePasswordAuthenticationFilter.class)
@@ -38,6 +39,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints
                 .requestMatchers("/api/v1/auth/login").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/auth/me").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/system/status").permitAll()
                 // Everything else requires authentication
                 .requestMatchers("/api/v1/**").authenticated()

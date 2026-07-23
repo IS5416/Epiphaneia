@@ -40,6 +40,20 @@ public class AuthController {
         this.tokenMapper = tokenMapper;
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<MeResponse>> me(HttpSession session) {
+        UUID adminId = (UUID) session.getAttribute("ADMIN_ID");
+        if (adminId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        Admin admin = adminRepo.findById(adminId).orElse(null);
+        if (admin == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(ApiResponse.ok(
+                new MeResponse(admin.getUsername(), admin.isMustChangePassword())));
+    }
+
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest req,
                                                             HttpServletRequest request, HttpSession session) {

@@ -39,9 +39,6 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/epiphaneia
       - SPRING_DATASOURCE_USERNAME=${DB_USER:-epiphaneia}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/epiphaneia
-      - SPRING_DATASOURCE_USERNAME=${DB_USER:-epiphaneia}
-      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - JPA_DDL_AUTO=update
       - EPIPHANEIA_ENCRYPTION_KEY=${EPIPHANEIA_ENCRYPTION_KEY}
       - SPRING_AI_OPENAI_API_KEY=${OPENAI_API_KEY:-none}
@@ -65,8 +62,8 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: epiphaneia-postgres
-    expose:
-      - "5432"
+    ports:
+      - "${DB_PORT:-5432}:5432"
     environment:
       - POSTGRES_DB=epiphaneia
       - POSTGRES_USER=${DB_USER:-epiphaneia}

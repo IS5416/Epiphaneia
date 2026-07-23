@@ -6,7 +6,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   const [authed, setAuthed] = useState<boolean | null>(null);
 
   useEffect(() => {
-    fetch('/api/v1/system/status', { credentials: 'same-origin' })
+    fetch('/api/v1/auth/me', { credentials: 'same-origin' })
       .then((r) => setAuthed(r.ok))
       .catch(() => setAuthed(false));
   }, []);
