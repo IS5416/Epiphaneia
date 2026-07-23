@@ -3,6 +3,7 @@
 **/.git/
 **/.idea/
 **/*.iml
-epiphaneia-web-ui/
+epiphaneia-web-ui/node_modules/
+epiphaneia-web-ui/dist/
 .env
 *.log

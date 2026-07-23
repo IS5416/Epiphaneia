@@ -26,7 +26,6 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    image: epiphaneia:${EPI_VERSION:-0.9.0}
     container_name: epiphaneia-app
     expose:
       - "8080"
@@ -42,8 +41,6 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - EPIPHANEIA_ENCRYPTION_KEY=${EPIPHANEIA_ENCRYPTION_KEY}
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
-    env_file:
-      - ../.env
     depends_on:
       postgres:
         condition: service_healthy
