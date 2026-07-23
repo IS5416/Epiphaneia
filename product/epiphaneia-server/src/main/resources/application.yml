@@ -1,13 +1,13 @@
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
   shutdown: graceful
   servlet:
     session:
       timeout: 30m
       cookie:
         http-only: true
-        secure: true
-        same-site: strict
+        secure: ${COOKIE_SECURE:false}
+        same-site: ${COOKIE_SAME_SITE:lax}
 
 spring:
   application:
@@ -21,7 +21,7 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME:epiphaneia}
     password: ${SPRING_DATASOURCE_PASSWORD}
     hikari:
-      maximum-pool-size: 10
+      maximum-pool-size: ${DB_POOL_SIZE:10}
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
@@ -34,6 +34,7 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+    show-sql: ${JPA_SHOW_SQL:false}
 
   flyway:
     enabled: true
@@ -62,3 +63,7 @@ management:
 
 epiphaneia:
   encryption-key: ${EPIPHANEIA_ENCRYPTION_KEY}
+
+logging:
+  level:
+    io.epiphaneia: ${LOG_LEVEL:INFO}

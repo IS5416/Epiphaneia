@@ -1,4 +1,10 @@
-# production config — sensitive values injected via docker-compose environment
+server:
+  servlet:
+    session:
+      cookie:
+        secure: true
+        same-site: strict
+
 spring:
   jpa:
     show-sql: false
@@ -6,3 +12,6 @@ spring:
 logging:
   level:
     io.epiphaneia: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
+    org.flywaydb: INFO
