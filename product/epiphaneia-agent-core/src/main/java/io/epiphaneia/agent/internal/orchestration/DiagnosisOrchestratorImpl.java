@@ -8,6 +8,8 @@ import io.epiphaneia.domain.internal.repository.*;
 import io.epiphaneia.llm.internal.client.LlmClient;
 import io.epiphaneia.llm.internal.routing.ModelRouter;
 import io.epiphaneia.llm.internal.template.PromptTemplateManager;
+import io.epiphaneia.engine.internal.elasticsearch.EsQueryBuilder;
+import io.epiphaneia.engine.internal.prometheus.PrometheusQueryBuilder;
 import io.epiphaneia.infra.api.ConnectorRegistry;
 import io.epiphaneia.infra.api.connector.Connector;
 import io.epiphaneia.infra.api.connector.QueryRequest;
@@ -37,6 +39,8 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
     private final PromptTemplateManager promptManager;
     private final ModelRouter modelRouter;
     private final ConnectorRegistry connectorRegistry;
+    private final PrometheusQueryBuilder prometheusQueryBuilder;
+    private final EsQueryBuilder esQueryBuilder;
     private final EntityManager em;
     private final EvidenceRepository evidenceRepo;
     private final RootCauseHypothesisRepository hypothesisRepo;
@@ -44,6 +48,8 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
 
     public DiagnosisOrchestratorImpl(LlmClient llmClient, PromptTemplateManager promptManager,
                                       ModelRouter modelRouter, ConnectorRegistry connectorRegistry,
+                                      PrometheusQueryBuilder prometheusQueryBuilder,
+                                      EsQueryBuilder esQueryBuilder,
                                       EntityManager em, EvidenceRepository evidenceRepo,
                                       RootCauseHypothesisRepository hypothesisRepo,
                                       FixSuggestionRepository suggestionRepo) {
@@ -51,6 +57,8 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
         this.promptManager = promptManager;
         this.modelRouter = modelRouter;
         this.connectorRegistry = connectorRegistry;
+        this.prometheusQueryBuilder = prometheusQueryBuilder;
+        this.esQueryBuilder = esQueryBuilder;
         this.em = em;
         this.evidenceRepo = evidenceRepo;
         this.hypothesisRepo = hypothesisRepo;
@@ -172,17 +180,46 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private List<Evidence> queryDataSource(DiagnosisContext ctx, DataSource ds, String plan) {
+        String queryStr = buildQueryForDataSource(ds, ctx.question());
         Connector connector = connectorRegistry.getConnector(ds.getType());
-        QueryResult result = connector.query(new QueryRequest() {
-            @Override public String toString() { return "plan"; }
-        });
+        QueryResult result = connector.query(new QueryRequest.Typed(queryStr, ds.getUrl()));
 
         Evidence ev = new Evidence();
         ev.setMessage(ctx.message());
         ev.setSource(ds.getType());
-        ev.setQueryText("Queried " + ds.getType() + " at " + sanitizeUrl(ds.getUrl()));
-        ev.setSummary("Response: " + (result != null ? "data collected" : "empty"));
+        ev.setQueryText(queryStr);
+
+        if (result instanceof QueryResult.Success s) {
+            ev.setSummary(s.summary() != null ? s.summary() : "Data collected (" + ds.getType() + ")");
+        } else if (result instanceof QueryResult.Failure f) {
+            ev.setSummary("Query failed: " + f.error() + " — " + f.detail());
+        } else {
+            ev.setSummary("Response received (" + ds.getType() + ")");
+        }
         return List.of(ev);
+    }
+
+    /** Build a reasonable default query for each data source type. */
+    private String buildQueryForDataSource(DataSource ds, String question) {
+        try {
+            return switch (ds.getType()) {
+                case "PROMETHEUS" -> prometheusQueryBuilder.buildInstantQuery("up", Map.of());
+                case "ELASTICSEARCH" -> esQueryBuilder.buildSearchQuery(
+                        extractSearchTerm(question), null, null, 50);
+                default -> "";
+            };
+        } catch (Exception e) {
+            log.warn("Failed to build query for {}: {}", ds.getType(), e.getMessage());
+            return "";
+        }
+    }
+
+    /** Extract a simple search term from the user's question. */
+    private static String extractSearchTerm(String question) {
+        if (question == null || question.isBlank()) return "*";
+        // ponytail: take first 100 chars, strip quotes
+        return question.replace("\"", "").replace("'", "")
+                .substring(0, Math.min(100, question.length()));
     }
 
     // ─── Phase: Analyzing ───────────────────────────────────────────

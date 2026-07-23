@@ -4,11 +4,14 @@ import io.epiphaneia.agent.api.DiagnosisContext;
 import io.epiphaneia.llm.api.DiagnosisSseEventPublisher;
 import io.epiphaneia.domain.internal.entity.*;
 import io.epiphaneia.domain.internal.repository.*;
+import io.epiphaneia.engine.internal.elasticsearch.EsQueryBuilder;
+import io.epiphaneia.engine.internal.prometheus.PrometheusQueryBuilder;
 import io.epiphaneia.llm.internal.client.LlmClient;
 import io.epiphaneia.llm.internal.routing.ModelRouter;
 import io.epiphaneia.llm.internal.template.PromptTemplateManager;
 import io.epiphaneia.infra.api.ConnectorRegistry;
 import io.epiphaneia.infra.api.connector.Connector;
+import io.epiphaneia.infra.api.connector.QueryRequest;
 import io.epiphaneia.infra.api.connector.QueryResult;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +33,8 @@ class DiagnosisOrchestratorImplTest {
     private PromptTemplateManager promptManager;
     private ModelRouter modelRouter;
     private ConnectorRegistry connectorRegistry;
+    private PrometheusQueryBuilder prometheusQueryBuilder;
+    private EsQueryBuilder esQueryBuilder;
     private EntityManager em;
     private EvidenceRepository evidenceRepo;
     private RootCauseHypothesisRepository hypothesisRepo;
@@ -50,13 +55,20 @@ class DiagnosisOrchestratorImplTest {
         promptManager = mock(PromptTemplateManager.class);
         modelRouter = mock(ModelRouter.class);
         connectorRegistry = mock(ConnectorRegistry.class);
+        prometheusQueryBuilder = mock(PrometheusQueryBuilder.class);
+        esQueryBuilder = mock(EsQueryBuilder.class);
         em = mock(EntityManager.class);
         evidenceRepo = mock(EvidenceRepository.class);
         hypothesisRepo = mock(RootCauseHypothesisRepository.class);
         suggestionRepo = mock(FixSuggestionRepository.class);
 
+        when(prometheusQueryBuilder.buildInstantQuery(anyString(), anyMap())).thenReturn("up");
+        when(esQueryBuilder.buildSearchQuery(anyString(), any(), any(), anyInt()))
+                .thenReturn("{\"query\":{\"match_all\":{}}}");
+
         orchestrator = new DiagnosisOrchestratorImpl(llmClient, promptManager,
-                modelRouter, connectorRegistry, em, evidenceRepo, hypothesisRepo, suggestionRepo);
+                modelRouter, connectorRegistry, prometheusQueryBuilder, esQueryBuilder,
+                em, evidenceRepo, hypothesisRepo, suggestionRepo);
 
         application = new Application();
         application.setName("test-service");

@@ -10,21 +10,29 @@ cp .env.example .env
 # Edit .env — fill in DB_PASSWORD and EPIPHANEIA_ENCRYPTION_KEY
 # Generate key: openssl rand -hex 32
 
-# 2. Start all services
-docker compose -f docker/docker-compose.yml up -d
+# 2. Start all services (--env-file points to the .env in project root)
+docker compose --env-file .env -f docker/docker-compose.yml up -d
 
-# 3. Open browser
+# 3. Check initial admin password
+docker logs epiphaneia-app | grep -A2 "Admin credentials"
+
+# 4. Open browser
 # http://localhost:80
-# Login: admin / (see console output on first boot)
+# Login: admin / (password from step 3)
 ```
 
 ## Local Development
 
 ```bash
-# Backend (requires PostgreSQL + application-local.yml)
+# Prerequisites: PostgreSQL on localhost:5432 with database "epiphaneia"
+# Create .env from template: cp .env.example .env → fill in DB_PASSWORD + EPIPHANEIA_ENCRYPTION_KEY
+
+# Backend
 cd product
-$env:SPRING_PROFILES_ACTIVE="local"
 ./mvnw spring-boot:run -pl epiphaneia-server
+# Reads .env via spring-boot-dotenv or set env vars manually:
+#   $env:SPRING_DATASOURCE_PASSWORD="your-password"
+#   $env:EPIPHANEIA_ENCRYPTION_KEY="your-hex-key"
 
 # Frontend (separate terminal)
 cd product/epiphaneia-web-ui
