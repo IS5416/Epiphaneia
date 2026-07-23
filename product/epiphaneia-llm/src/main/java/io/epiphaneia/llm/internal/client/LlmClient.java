@@ -5,6 +5,7 @@ import io.epiphaneia.llm.internal.routing.ModelRouter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 
 /**
@@ -22,12 +23,23 @@ public class LlmClient {
 
     private static final Logger log = LoggerFactory.getLogger(LlmClient.class);
 
-    private final ChatClient.Builder chatClientBuilder;
+    private final ObjectProvider<ChatClient.Builder> chatClientBuilderProvider;
     private final ModelRouter modelRouter;
 
-    public LlmClient(ChatClient.Builder chatClientBuilder, ModelRouter modelRouter) {
-        this.chatClientBuilder = chatClientBuilder;
+    public LlmClient(ObjectProvider<ChatClient.Builder> chatClientBuilderProvider,
+                      ModelRouter modelRouter) {
+        this.chatClientBuilderProvider = chatClientBuilderProvider;
         this.modelRouter = modelRouter;
+    }
+
+    private ChatClient.Builder getBuilder() {
+        ChatClient.Builder builder = chatClientBuilderProvider.getIfAvailable();
+        if (builder == null) {
+            throw new IllegalStateException(
+                    "No LLM API key configured. Set OPENAI_API_KEY or DEEPSEEK_API_KEY environment variable, "
+                    + "or configure via Web UI Settings page.");
+        }
+        return builder;
     }
 
     /**
@@ -36,7 +48,7 @@ public class LlmClient {
     public String call(String systemPrompt, String userPrompt, LlmProvider provider) {
         modelRouter.validateProvider(provider.getProvider());
         log.debug("LLM call: provider={}, model={}", provider.getProvider(), provider.getModelName());
-        return chatClientBuilder.build()
+        return getBuilder().build()
                 .prompt()
                 .system(systemPrompt)
                 .user(userPrompt)
@@ -53,7 +65,7 @@ public class LlmClient {
         }
         log.debug("LLM call: provider={}",
                 provider != null ? provider.getProvider() : "default");
-        return chatClientBuilder.build()
+        return getBuilder().build()
                 .prompt()
                 .user(prompt)
                 .call()
@@ -62,7 +74,7 @@ public class LlmClient {
 
     /** Convenience overload using the auto-configured default ChatClient. */
     public String call(String prompt) {
-        return chatClientBuilder.build()
+        return getBuilder().build()
                 .prompt()
                 .user(prompt)
                 .call()
@@ -76,7 +88,7 @@ public class LlmClient {
     public boolean testConnection(LlmProvider provider) {
         try {
             modelRouter.validateProvider(provider.getProvider());
-            String response = chatClientBuilder.build()
+            String response = getBuilder().build()
                     .prompt()
                     .user("Respond with exactly the word: OK")
                     .call()
