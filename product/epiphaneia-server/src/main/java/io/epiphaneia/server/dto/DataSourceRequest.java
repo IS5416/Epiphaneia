@@ -18,4 +18,7 @@ public record DataSourceRequest(
         @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
         String authConfig
 ) {
+    public DataSourceRequest {
+        if (authType == null || authType.isBlank()) authType = "NONE";
+    }
 }

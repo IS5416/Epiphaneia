@@ -43,7 +43,7 @@ public class ConversationController {
     }
 
     @GetMapping
-    public ApiListResponse<ConversationResponse> list(
+    public ApiResponse<ApiListResponse<ConversationResponse>> list(
             @RequestParam(name = "appId", required = false) UUID applicationId,
             @RequestParam(required = false) String keyword) {
         List<Conversation> conversations;
@@ -57,7 +57,7 @@ public class ConversationController {
 
         List<ConversationResponse> result = conversations.stream()
                 .map(mapper::toConversationResponse).toList();
-        return ApiListResponse.of(result);
+        return ApiResponse.ok(ApiListResponse.of(result));
     }
 
     @PostMapping

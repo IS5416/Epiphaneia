@@ -1,6 +1,9 @@
 package io.epiphaneia.domain.internal.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -24,12 +27,14 @@ public class DataSource {
     @Column(name = "auth_type", nullable = false, length = 20)
     private String authType = "NONE";
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "auth_config", columnDefinition = "jsonb")
     private String authConfig;
 
     @Column(name = "is_connected")
     private boolean connected;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String metadata;
 

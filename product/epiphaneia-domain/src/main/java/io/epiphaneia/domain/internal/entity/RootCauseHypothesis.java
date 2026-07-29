@@ -1,6 +1,9 @@
 package io.epiphaneia.domain.internal.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.util.UUID;
 
 @Entity
@@ -25,6 +28,7 @@ public class RootCauseHypothesis {
     @Column(columnDefinition = "DOUBLE PRECISION")
     private Double confidence;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "supporting_evidence_ids", columnDefinition = "jsonb")
     private String supportingEvidenceIds = "[]";
 

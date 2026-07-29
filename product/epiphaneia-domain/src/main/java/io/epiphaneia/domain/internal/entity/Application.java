@@ -1,6 +1,9 @@
 package io.epiphaneia.domain.internal.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +26,11 @@ public class Application {
     @Column(name = "prometheus_label", nullable = false, length = 200)
     private String prometheusLabel;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String tags = "[]";
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "actuator_info", columnDefinition = "jsonb")
     private String actuatorInfo;
 

@@ -32,10 +32,10 @@ public class ApplicationController {
     }
 
     @GetMapping
-    public ApiListResponse<ApplicationResponse> list() {
+    public ApiResponse<ApiListResponse<ApplicationResponse>> list() {
         List<ApplicationResponse> apps = appRepo.findAll().stream()
                 .map(mapper::toResponse).toList();
-        return ApiListResponse.of(apps);
+        return ApiResponse.ok(ApiListResponse.of(apps));
     }
 
     @PostMapping

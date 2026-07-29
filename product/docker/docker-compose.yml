@@ -42,7 +42,7 @@ services:
       - JPA_DDL_AUTO=update
       - EPIPHANEIA_ENCRYPTION_KEY=${EPIPHANEIA_ENCRYPTION_KEY}
       - SPRING_AI_OPENAI_API_KEY=${OPENAI_API_KEY:-none}
-      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-}
     depends_on:
       postgres:
         condition: service_healthy
