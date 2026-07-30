@@ -1,4 +1,4 @@
-package io.epiphaneia.agent.internal.orchestration;
+package io.epiphaneia.agent.api.orchestration;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

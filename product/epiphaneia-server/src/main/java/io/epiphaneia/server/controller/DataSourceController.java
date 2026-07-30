@@ -1,7 +1,7 @@
 package io.epiphaneia.server.controller;
 
-import io.epiphaneia.domain.internal.entity.DataSource;
-import io.epiphaneia.domain.internal.repository.DataSourceRepository;
+import io.epiphaneia.domain.entity.DataSource;
+import io.epiphaneia.domain.repository.DataSourceRepository;
 import io.epiphaneia.infra.api.ConnectorRegistry;
 import io.epiphaneia.infra.api.connector.AuthConfig;
 import io.epiphaneia.infra.api.connector.ConnectionConfig;
@@ -34,10 +34,10 @@ public class DataSourceController {
     }
 
     @GetMapping
-    public ApiListResponse<DataSourceResponse> list() {
+    public ApiResponse<ApiListResponse<DataSourceResponse>> list() {
         List<DataSourceResponse> sources = dsRepo.findAll().stream()
                 .map(mapper::toResponse).toList();
-        return ApiListResponse.of(sources);
+        return ApiResponse.ok(ApiListResponse.of(sources));
     }
 
     @PostMapping

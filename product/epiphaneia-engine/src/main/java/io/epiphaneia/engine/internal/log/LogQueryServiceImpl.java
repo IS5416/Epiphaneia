@@ -1,7 +1,7 @@
 package io.epiphaneia.engine.internal.log;
 
 import io.epiphaneia.engine.api.LogQueryService;
-import io.epiphaneia.engine.internal.elasticsearch.EsQueryBuilder;
+import io.epiphaneia.engine.api.query.EsQueryBuilder;
 import io.epiphaneia.infra.api.connector.QueryResult;
 import org.springframework.stereotype.Service;
 

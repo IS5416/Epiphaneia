@@ -1,11 +1,11 @@
-package io.epiphaneia.agent.internal.orchestration;
+package io.epiphaneia.agent.api.orchestration;
 
-import io.epiphaneia.domain.internal.entity.*;
-import io.epiphaneia.domain.internal.repository.EvidenceRepository;
-import io.epiphaneia.domain.internal.repository.FixSuggestionRepository;
-import io.epiphaneia.domain.internal.repository.RootCauseHypothesisRepository;
-import io.epiphaneia.llm.internal.client.LlmClient;
-import io.epiphaneia.llm.internal.template.PromptTemplateManager;
+import io.epiphaneia.domain.entity.*;
+import io.epiphaneia.domain.repository.EvidenceRepository;
+import io.epiphaneia.domain.repository.FixSuggestionRepository;
+import io.epiphaneia.domain.repository.RootCauseHypothesisRepository;
+import io.epiphaneia.llm.api.client.LlmClient;
+import io.epiphaneia.llm.api.template.PromptTemplateManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

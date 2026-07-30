@@ -1,11 +1,11 @@
 package io.epiphaneia.server.skill;
 
 import io.epiphaneia.llm.api.DiagnosisSseEventPublisher;
-import io.epiphaneia.domain.internal.entity.*;
-import io.epiphaneia.domain.internal.repository.*;
+import io.epiphaneia.domain.entity.*;
+import io.epiphaneia.domain.repository.*;
 import io.epiphaneia.agent.api.DiagnosisContext;
 import io.epiphaneia.agent.api.DiagnosisOrchestrator;
-import io.epiphaneia.agent.internal.orchestration.DiagnosisStateMachine;
+import io.epiphaneia.agent.api.orchestration.DiagnosisStateMachine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

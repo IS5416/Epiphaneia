@@ -1,4 +1,4 @@
-package io.epiphaneia.engine.internal.prometheus;
+package io.epiphaneia.engine.api.query;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

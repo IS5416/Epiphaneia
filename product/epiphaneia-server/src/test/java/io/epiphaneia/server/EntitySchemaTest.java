@@ -1,6 +1,6 @@
 package io.epiphaneia.server;
 
-import io.epiphaneia.domain.internal.entity.*;
+import io.epiphaneia.domain.entity.*;
 import jakarta.persistence.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;

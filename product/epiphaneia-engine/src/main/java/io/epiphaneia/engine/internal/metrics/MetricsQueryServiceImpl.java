@@ -1,7 +1,7 @@
 package io.epiphaneia.engine.internal.metrics;
 
 import io.epiphaneia.engine.api.MetricsQueryService;
-import io.epiphaneia.engine.internal.prometheus.PrometheusQueryBuilder;
+import io.epiphaneia.engine.api.query.PrometheusQueryBuilder;
 import io.epiphaneia.infra.api.connector.QueryResult;
 import org.springframework.stereotype.Service;
 

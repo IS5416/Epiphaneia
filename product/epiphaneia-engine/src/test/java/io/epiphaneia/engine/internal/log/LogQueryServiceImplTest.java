@@ -1,6 +1,6 @@
 package io.epiphaneia.engine.internal.log;
 
-import io.epiphaneia.engine.internal.elasticsearch.EsQueryBuilder;
+import io.epiphaneia.engine.api.query.EsQueryBuilder;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

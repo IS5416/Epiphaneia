@@ -1,9 +1,9 @@
 package io.epiphaneia.server.controller;
 
-import io.epiphaneia.domain.internal.entity.LlmProvider;
-import io.epiphaneia.domain.internal.repository.LlmProviderRepository;
+import io.epiphaneia.domain.entity.LlmProvider;
+import io.epiphaneia.domain.repository.LlmProviderRepository;
 import io.epiphaneia.llm.api.LlmProviderValidator;
-import io.epiphaneia.llm.internal.client.LlmClient;
+import io.epiphaneia.llm.api.client.LlmClient;
 import io.epiphaneia.infra.api.EncryptionService;
 import io.epiphaneia.server.dto.*;
 import io.epiphaneia.server.mapper.LlmProviderMapper;

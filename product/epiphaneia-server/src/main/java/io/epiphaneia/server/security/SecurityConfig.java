@@ -1,7 +1,7 @@
 package io.epiphaneia.server.security;
 
-import io.epiphaneia.domain.internal.repository.AdminRepository;
-import io.epiphaneia.domain.internal.repository.ApiTokenRepository;
+import io.epiphaneia.domain.repository.AdminRepository;
+import io.epiphaneia.domain.repository.ApiTokenRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;

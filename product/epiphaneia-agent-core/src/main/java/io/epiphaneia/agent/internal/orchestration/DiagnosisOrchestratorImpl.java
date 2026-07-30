@@ -1,15 +1,15 @@
-package io.epiphaneia.agent.internal.orchestration;
+package io.epiphaneia.agent.api.orchestration;
 
 import io.epiphaneia.agent.api.DiagnosisContext;
 import io.epiphaneia.agent.api.DiagnosisOrchestrator;
 import io.epiphaneia.llm.api.DiagnosisSseEventPublisher;
-import io.epiphaneia.domain.internal.entity.*;
-import io.epiphaneia.domain.internal.repository.*;
-import io.epiphaneia.llm.internal.client.LlmClient;
-import io.epiphaneia.llm.internal.routing.ModelRouter;
-import io.epiphaneia.llm.internal.template.PromptTemplateManager;
-import io.epiphaneia.engine.internal.elasticsearch.EsQueryBuilder;
-import io.epiphaneia.engine.internal.prometheus.PrometheusQueryBuilder;
+import io.epiphaneia.domain.entity.*;
+import io.epiphaneia.domain.repository.*;
+import io.epiphaneia.llm.api.client.LlmClient;
+import io.epiphaneia.llm.api.routing.ModelRouter;
+import io.epiphaneia.llm.api.template.PromptTemplateManager;
+import io.epiphaneia.engine.api.query.EsQueryBuilder;
+import io.epiphaneia.engine.api.query.PrometheusQueryBuilder;
 import io.epiphaneia.infra.api.ConnectorRegistry;
 import io.epiphaneia.infra.api.connector.Connector;
 import io.epiphaneia.infra.api.connector.QueryRequest;

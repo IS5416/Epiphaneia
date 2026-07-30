@@ -1,6 +1,6 @@
 package io.epiphaneia.server.mapper;
 
-import io.epiphaneia.domain.internal.entity.LlmProvider;
+import io.epiphaneia.domain.entity.LlmProvider;
 import io.epiphaneia.server.dto.LlmProviderRequest;
 import io.epiphaneia.server.dto.LlmProviderResponse;
 import org.mapstruct.Mapper;

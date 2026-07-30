@@ -1,6 +1,6 @@
-package io.epiphaneia.llm.internal.template;
+package io.epiphaneia.llm.api.template;
 
-import io.epiphaneia.llm.internal.template.PromptTemplateManager;
+import io.epiphaneia.llm.api.template.PromptTemplateManager;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

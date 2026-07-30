@@ -1,6 +1,6 @@
 package io.epiphaneia.engine.internal.metrics;
 
-import io.epiphaneia.engine.internal.prometheus.PrometheusQueryBuilder;
+import io.epiphaneia.engine.api.query.PrometheusQueryBuilder;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

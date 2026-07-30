@@ -1,10 +1,10 @@
 package io.epiphaneia.agent.api;
 
-import io.epiphaneia.domain.internal.entity.Application;
-import io.epiphaneia.domain.internal.entity.Conversation;
-import io.epiphaneia.domain.internal.entity.DataSource;
-import io.epiphaneia.domain.internal.entity.LlmProvider;
-import io.epiphaneia.domain.internal.entity.Message;
+import io.epiphaneia.domain.entity.Application;
+import io.epiphaneia.domain.entity.Conversation;
+import io.epiphaneia.domain.entity.DataSource;
+import io.epiphaneia.domain.entity.LlmProvider;
+import io.epiphaneia.domain.entity.Message;
 
 import java.util.List;
 

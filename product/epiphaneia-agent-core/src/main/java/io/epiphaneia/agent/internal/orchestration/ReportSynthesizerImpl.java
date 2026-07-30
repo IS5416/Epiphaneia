@@ -1,12 +1,12 @@
-package io.epiphaneia.agent.internal.orchestration;
+package io.epiphaneia.agent.api.orchestration;
 
 import io.epiphaneia.agent.api.ReportSynthesizer;
-import io.epiphaneia.domain.internal.entity.*;
-import io.epiphaneia.domain.internal.repository.EvidenceRepository;
-import io.epiphaneia.domain.internal.repository.FixSuggestionRepository;
-import io.epiphaneia.domain.internal.repository.RootCauseHypothesisRepository;
-import io.epiphaneia.llm.internal.client.LlmClient;
-import io.epiphaneia.llm.internal.template.PromptTemplateManager;
+import io.epiphaneia.domain.entity.*;
+import io.epiphaneia.domain.repository.EvidenceRepository;
+import io.epiphaneia.domain.repository.FixSuggestionRepository;
+import io.epiphaneia.domain.repository.RootCauseHypothesisRepository;
+import io.epiphaneia.llm.api.client.LlmClient;
+import io.epiphaneia.llm.api.template.PromptTemplateManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

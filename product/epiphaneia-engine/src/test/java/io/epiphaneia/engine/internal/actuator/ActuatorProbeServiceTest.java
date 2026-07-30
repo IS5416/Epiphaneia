@@ -1,4 +1,4 @@
-package io.epiphaneia.engine.internal.actuator;
+package io.epiphaneia.engine.api.actuator;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

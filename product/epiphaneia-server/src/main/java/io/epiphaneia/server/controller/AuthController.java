@@ -1,9 +1,9 @@
 package io.epiphaneia.server.controller;
 
-import io.epiphaneia.domain.internal.entity.Admin;
-import io.epiphaneia.domain.internal.entity.ApiToken;
-import io.epiphaneia.domain.internal.repository.AdminRepository;
-import io.epiphaneia.domain.internal.repository.ApiTokenRepository;
+import io.epiphaneia.domain.entity.Admin;
+import io.epiphaneia.domain.entity.ApiToken;
+import io.epiphaneia.domain.repository.AdminRepository;
+import io.epiphaneia.domain.repository.ApiTokenRepository;
 import io.epiphaneia.server.dto.*;
 import io.epiphaneia.server.mapper.ApiTokenMapper;
 import io.epiphaneia.server.security.TokenHasher;

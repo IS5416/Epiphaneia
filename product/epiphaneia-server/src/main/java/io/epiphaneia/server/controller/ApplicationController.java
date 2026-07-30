@@ -1,8 +1,8 @@
 package io.epiphaneia.server.controller;
 
-import io.epiphaneia.domain.internal.entity.Application;
-import io.epiphaneia.domain.internal.repository.ApplicationRepository;
-import io.epiphaneia.engine.internal.actuator.ActuatorProbeService;
+import io.epiphaneia.domain.entity.Application;
+import io.epiphaneia.domain.repository.ApplicationRepository;
+import io.epiphaneia.engine.api.actuator.ActuatorProbeService;
 import io.epiphaneia.server.dto.*;
 import io.epiphaneia.server.mapper.ApplicationMapper;
 import jakarta.validation.Valid;

@@ -16,3 +16,5 @@
 | 2026-07-22 | 02 | Phase 4 Web UI 完成（6 页面 + SSE + 审查修复） | [devLog/2026-07-22-02-phase4-web-ui.md](devLog/2026-07-22-02-phase4-web-ui.md) |
 | 2026-07-22 | 03 | Phase 5 Docker 收尾 + 文档完成 | [devLog/2026-07-22-03-phase5-docker-docs.md](devLog/2026-07-22-03-phase5-docker-docs.md) |
 | 2026-07-23 | 01 | 全项目审查 + 架构重构 (5→7模块, 67项修复) | [devLog/2026-07-23-01-architecture-restructuring.md](devLog/2026-07-23-01-architecture-restructuring.md) |
+| 2026-07-29 | 01 | LLM RestClient 重构 + 启动 Bug 修复 (5项修复) | [devLog/2026-07-29-01-llm-restclient-bugfixes.md](devLog/2026-07-29-01-llm-restclient-bugfixes.md) |
+| 2026-07-29 | 02 | api/internal 封装规范化 (50→0 跨模块违规) | [devLog/2026-07-29-02-api-internal-encapsulation.md](devLog/2026-07-29-02-api-internal-encapsulation.md) |
