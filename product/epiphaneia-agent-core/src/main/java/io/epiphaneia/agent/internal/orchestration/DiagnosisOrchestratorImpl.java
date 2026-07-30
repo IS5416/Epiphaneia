@@ -1,7 +1,8 @@
-package io.epiphaneia.agent.api.orchestration;
+package io.epiphaneia.agent.internal.orchestration;
 
 import io.epiphaneia.agent.api.DiagnosisContext;
 import io.epiphaneia.agent.api.DiagnosisOrchestrator;
+import io.epiphaneia.agent.api.orchestration.DiagnosisStateMachine;
 import io.epiphaneia.llm.api.DiagnosisSseEventPublisher;
 import io.epiphaneia.domain.entity.*;
 import io.epiphaneia.domain.repository.*;

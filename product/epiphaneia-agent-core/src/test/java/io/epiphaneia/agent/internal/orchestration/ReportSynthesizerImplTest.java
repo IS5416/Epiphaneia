@@ -1,4 +1,4 @@
-package io.epiphaneia.agent.api.orchestration;
+package io.epiphaneia.agent.internal.orchestration;
 
 import io.epiphaneia.domain.entity.*;
 import io.epiphaneia.domain.repository.EvidenceRepository;

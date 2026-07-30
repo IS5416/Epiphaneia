@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 
-import static io.epiphaneia.agent.internal.orchestration.DiagnosisStateMachine.State;
-import static io.epiphaneia.agent.internal.orchestration.DiagnosisStateMachine.State.*;
+import static io.epiphaneia.agent.api.orchestration.DiagnosisStateMachine.State;
+import static io.epiphaneia.agent.api.orchestration.DiagnosisStateMachine.State.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DiagnosisStateMachineTest {

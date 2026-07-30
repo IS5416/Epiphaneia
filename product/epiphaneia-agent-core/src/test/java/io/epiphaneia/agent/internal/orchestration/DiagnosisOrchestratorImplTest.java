@@ -1,4 +1,4 @@
-package io.epiphaneia.agent.api.orchestration;
+package io.epiphaneia.agent.internal.orchestration;
 
 import io.epiphaneia.agent.api.DiagnosisContext;
 import io.epiphaneia.llm.api.DiagnosisSseEventPublisher;
