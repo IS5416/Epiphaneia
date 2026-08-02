@@ -11,6 +11,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -35,11 +37,18 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // ponytail: these are @Bean-annotated to support constructor injection in filter
         var sessionFilter = new SessionAuthFilter(adminRepository);
-        var bearerFilter = new BearerTokenFilter(apiTokenRepository, adminRepository);
+        var bearerFilter = new BearerTokenFilter(apiTokenRepository);
         var rateLimitFilter = new RateLimitFilter();
 
+        // CSRF enabled: the SPA authenticates with session cookies (same-origin via Nginx).
+        // CookieCsrfTokenRepository serves XSRF-TOKEN; plain handler accepts the cookie value
+        // verbatim in the X-XSRF-TOKEN header (client.ts already sends it). Login is exempt —
+        // no session/XSRF cookie exists on the very first visit.
         return http
-            .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                .ignoringRequestMatchers("/api/v1/auth/login"))
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(sessionFilter, UsernamePasswordAuthenticationFilter.class)

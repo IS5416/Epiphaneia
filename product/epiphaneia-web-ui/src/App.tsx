@@ -13,7 +13,9 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/setup" element={<SetupWizard />} />
+        {/* ProtectedRoute double-duty: blocks unauthenticated access AND its GET /auth/me
+            triggers the CSRF filter to issue the XSRF-TOKEN cookie before the first POST */}
+        <Route path="/setup" element={<ProtectedRoute><SetupWizard /></ProtectedRoute>} />
         <Route element={<Layout />}>
           <Route path="/workspace" element={<ProtectedRoute><DiagnosisWorkspace /></ProtectedRoute>} />
           <Route path="/report/:id" element={<ProtectedRoute><ReportView /></ProtectedRoute>} />

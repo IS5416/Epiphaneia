@@ -7,6 +7,8 @@ type SseCallbacks = {
   onClose?: () => void;
 };
 
+import { getCsrfToken } from './client';
+
 export function connectSse(
   conversationId: string,
   question: string,
@@ -15,9 +17,14 @@ export function connectSse(
   const controller = new AbortController();
   const url = `/api/v1/conversations/${conversationId}/messages?question=${encodeURIComponent(question)}`;
 
+  const headers: Record<string, string> = {};
+  const csrf = getCsrfToken();
+  if (csrf) headers['X-XSRF-TOKEN'] = csrf;
+
   fetch(url, {
     method: 'POST',
     credentials: 'same-origin',
+    headers,
     signal: controller.signal,
   })
     .then(async (response) => {
