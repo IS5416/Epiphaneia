@@ -1,9 +1,7 @@
 package io.epiphaneia.server.security;
 
 import io.epiphaneia.domain.entity.ApiToken;
-import io.epiphaneia.domain.entity.Admin;
 import io.epiphaneia.domain.repository.ApiTokenRepository;
-import io.epiphaneia.domain.repository.AdminRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,11 +30,9 @@ public class BearerTokenFilter extends OncePerRequestFilter {
             List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
 
     private final ApiTokenRepository apiTokenRepository;
-    private final AdminRepository adminRepository;
 
-    public BearerTokenFilter(ApiTokenRepository apiTokenRepository, AdminRepository adminRepository) {
+    public BearerTokenFilter(ApiTokenRepository apiTokenRepository) {
         this.apiTokenRepository = apiTokenRepository;
-        this.adminRepository = adminRepository;
     }
 
     @Override
@@ -63,10 +59,16 @@ public class BearerTokenFilter extends OncePerRequestFilter {
             return;
         }
 
-        // ponytail: ApiToken entity doesn't expose getAdmin() getter — the admin FK is internal.
-        // We just need any admin principal for Spring Security; use a placeholder.
-        var auth = new UsernamePasswordAuthenticationToken(
-                "admin", rawToken, ADMIN_AUTHORITY);
+        // Principal is the real admin identity (UUID). Accessing the lazy @ManyToOne proxy's
+        // id() does not trigger a DB hit, so no LazyInitializationException outside a session.
+        // Credentials stay null: the raw token never enters the security context.
+        var admin = token.get().getAdmin();
+        if (admin == null) {
+            // orphaned token (admin deleted without cascade): treat as unauthenticated
+            chain.doFilter(request, response);
+            return;
+        }
+        var auth = new UsernamePasswordAuthenticationToken(admin.getId(), null, ADMIN_AUTHORITY);
         SecurityContextHolder.getContext().setAuthentication(auth);
         chain.doFilter(request, response);
     }
