@@ -18,3 +18,4 @@
 | 2026-07-23 | 01 | 全项目审查 + 架构重构 (5→7模块, 67项修复) | [devLog/2026-07-23-01-architecture-restructuring.md](devLog/2026-07-23-01-architecture-restructuring.md) |
 | 2026-07-29 | 01 | LLM RestClient 重构 + 启动 Bug 修复 (5项修复) | [devLog/2026-07-29-01-llm-restclient-bugfixes.md](devLog/2026-07-29-01-llm-restclient-bugfixes.md) |
 | 2026-07-29 | 02 | api/internal 封装规范化 (50→0 跨模块违规) | [devLog/2026-07-29-02-api-internal-encapsulation.md](devLog/2026-07-29-02-api-internal-encapsulation.md) |
+| 2026-08-02 | 01 | Phase 8 批次 A/B/C 修复 (安全+编排+连接器, 基线审查驱动) | [devLog/2026-08-02-01-phase8-batch-fixes.md](devLog/2026-08-02-01-phase8-batch-fixes.md) |

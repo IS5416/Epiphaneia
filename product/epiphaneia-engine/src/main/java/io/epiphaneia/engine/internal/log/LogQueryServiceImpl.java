@@ -20,8 +20,13 @@ public class LogQueryServiceImpl implements LogQueryService {
 
     @Override
     public QueryResult query(String datasourceType, String service, String startTime, String endTime) {
-        // ponytail: returns placeholder — real query dispatch in Phase 2 orchestration
+        if (!"ELASTICSEARCH".equalsIgnoreCase(datasourceType)) {
+            return new QueryResult.Failure("UNSUPPORTED_DATASOURCE",
+                    "LogQueryService only supports ELASTICSEARCH, got " + datasourceType);
+        }
+        // ponytail: builds the DSL here; actual connector dispatch happens in agent-core
         String esDsl = queryBuilder.buildErrorLogQuery(service, startTime, endTime);
-        return new QueryResult() {};
+        return new QueryResult.Failure("NOT_IMPLEMENTED",
+                "Direct dispatch removed — route through DiagnosisOrchestrator (query built: " + esDsl + ")");
     }
 }

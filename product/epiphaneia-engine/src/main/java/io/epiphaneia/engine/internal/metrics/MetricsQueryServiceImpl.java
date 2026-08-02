@@ -22,8 +22,17 @@ public class MetricsQueryServiceImpl implements MetricsQueryService {
 
     @Override
     public QueryResult query(String datasourceType, String metricIntent, String timeRange) {
-        // ponytail: returns placeholder — real query dispatch in Phase 2 orchestration
-        String promql = queryBuilder.buildInstantQuery(metricIntent, Map.of());
-        return new QueryResult() {};
+        if (!"PROMETHEUS".equalsIgnoreCase(datasourceType)) {
+            return new QueryResult.Failure("UNSUPPORTED_DATASOURCE",
+                    "MetricsQueryService only supports PROMETHEUS, got " + datasourceType);
+        }
+        try {
+            // ponytail: builds the PromQL here; actual connector dispatch happens in agent-core
+            String promql = queryBuilder.buildInstantQuery(metricIntent, Map.of());
+            return new QueryResult.Failure("NOT_IMPLEMENTED",
+                    "Direct dispatch removed — route through DiagnosisOrchestrator (query built: " + promql + ")");
+        } catch (IllegalArgumentException e) {
+            return new QueryResult.Failure("INVALID_METRIC", e.getMessage());
+        }
     }
 }

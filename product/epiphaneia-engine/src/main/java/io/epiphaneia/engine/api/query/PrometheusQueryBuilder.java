@@ -2,7 +2,6 @@ package io.epiphaneia.engine.api.query;
 
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -16,47 +15,40 @@ import java.util.stream.Collectors;
 @Component
 public class PrometheusQueryBuilder {
 
-    /** Build a rate query for a metric over a time window. */
+    /**
+     * Build a range query for a metric over a time window, optionally wrapped in an
+     * aggregation. Built structurally so the range window always attaches to the
+     * metric selector itself (correct for nested aggregations like
+     * {@code sum(rate(metric{labels}[5m]))} — a naive lastIndexOf(")") would drop
+     * the outer closing paren).
+     */
     public String buildRangeQuery(String metric, Map<String, String> labels,
                                    String aggregation, String rangeWindow) {
-        StringBuilder sb = new StringBuilder();
-        if (aggregation != null && !aggregation.isBlank()) {
-            sb.append(aggregation).append("(");
+        if (metric == null || metric.isBlank()) {
+            throw new IllegalArgumentException("metric must not be null or blank");
         }
-        sb.append(metric);
-        if (labels != null && !labels.isEmpty()) {
-            sb.append("{");
-            sb.append(labels.entrySet().stream()
-                    .map(e -> e.getKey() + "=\"" + escapeLabelValue(e.getValue()) + "\"")
-                    .collect(Collectors.joining(",")));
-            sb.append("}");
-        }
-        if (aggregation != null && !aggregation.isBlank()) {
-            sb.append(")");
-        }
+        String selector = metric + formatLabels(labels);
         if (rangeWindow != null && !rangeWindow.isBlank()) {
-            int aggClose = sb.lastIndexOf(")");
-            if (aggClose >= 0) {
-                sb.insert(aggClose, "[" + rangeWindow + "]");
-            } else {
-                sb.append("[").append(rangeWindow).append("]");
-            }
+            selector += "[" + rangeWindow + "]";
         }
-        return sb.toString();
+        if (aggregation != null && !aggregation.isBlank()) {
+            // single function name only — nested calls like "sum(rate" would produce
+            // unbalanced PromQL, so reject them up front
+            if (!aggregation.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
+                throw new IllegalArgumentException(
+                        "Invalid aggregation function name: '" + aggregation + "'");
+            }
+            return aggregation + "(" + selector + ")";
+        }
+        return selector;
     }
 
     /** Build an instant query for a metric at a point in time. */
     public String buildInstantQuery(String metric, Map<String, String> labels) {
-        if (metric == null) metric = "unknown";
-        StringBuilder sb = new StringBuilder(metric);
-        if (labels != null && !labels.isEmpty()) {
-            sb.append("{");
-            sb.append(labels.entrySet().stream()
-                    .map(e -> e.getKey() + "=\"" + escapeLabelValue(e.getValue()) + "\"")
-                    .collect(Collectors.joining(",")));
-            sb.append("}");
+        if (metric == null || metric.isBlank()) {
+            throw new IllegalArgumentException("metric must not be null or blank");
         }
-        return sb.toString();
+        return metric + formatLabels(labels);
     }
 
     /**
@@ -64,20 +56,31 @@ public class PrometheusQueryBuilder {
      * Standard pattern: rate(http_requests_total{job="svc"}[5m])
      */
     public String buildRateQuery(String metric, Map<String, String> labels, String window) {
-        StringBuilder base = new StringBuilder("rate(").append(metric);
-        if (labels != null && !labels.isEmpty()) {
-            base.append("{");
-            base.append(labels.entrySet().stream()
-                    .map(e -> e.getKey() + "=\"" + escapeLabelValue(e.getValue()) + "\"")
-                    .collect(Collectors.joining(",")));
-            base.append("}");
+        if (metric == null || metric.isBlank()) {
+            throw new IllegalArgumentException("metric must not be null or blank");
         }
-        base.append("[").append(window != null ? window : "5m").append("])");
-        return base.toString();
+        return "rate(" + metric + formatLabels(labels)
+                + "[" + (window != null ? window : "5m") + "])";
+    }
+
+    /** Serialize the label matcher block {@code {k="v",...}}; empty input yields "". */
+    private static String formatLabels(Map<String, String> labels) {
+        if (labels == null || labels.isEmpty()) return "";
+        String body = labels.entrySet().stream()
+                .map(e -> {
+                    if (!e.getKey().matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
+                        throw new IllegalArgumentException(
+                                "Invalid PromQL label name: '" + e.getKey() + "'");
+                    }
+                    return e.getKey() + "=\"" + escapeLabelValue(e.getValue()) + "\"";
+                })
+                .collect(Collectors.joining(","));
+        return "{" + body + "}";
     }
 
     private static String escapeLabelValue(String value) {
         if (value == null) return "";
-        return value.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
+        return value.replace("\\", "\\\\").replace("\"", "\\\"")
+                .replace("\n", "\\n").replace("\r", "\\r");
     }
 }

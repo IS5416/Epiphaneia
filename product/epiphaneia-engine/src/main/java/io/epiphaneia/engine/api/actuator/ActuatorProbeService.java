@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -32,6 +33,9 @@ public class ActuatorProbeService {
             {"password", "secret", "credential", "pwd", "passwd", "token", "private_key", "api_key"};
     private static final HttpClient HTTP = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(5))
+            // SSRF guard: never follow redirects — a 302 could point at loopback/metadata
+            // (169.254.169.254) after validateUrl() approved the original host
+            .followRedirects(HttpClient.Redirect.NEVER)
             .build();
 
     /**
@@ -74,13 +78,44 @@ public class ActuatorProbeService {
         }
         try {
             InetAddress addr = InetAddress.getByName(host);
-            if (addr.isLoopbackAddress() || addr.isLinkLocalAddress() || addr.isSiteLocalAddress()) {
+            if (isForbiddenAddress(addr)) {
                 throw new IllegalArgumentException(
                         "actuatorUrl must not target local/private addresses: " + url);
             }
         } catch (java.net.UnknownHostException e) {
             throw new IllegalArgumentException("Cannot resolve actuator host: " + host, e);
         }
+    }
+
+    /**
+     * Loopback/link-local/site-local check that also covers IPv4-mapped IPv6
+     * addresses (e.g. {@code ::ffff:127.0.0.1}), which are not caught by the
+     * plain InetAddress flag checks.
+     */
+    static boolean isForbiddenAddress(InetAddress addr) {
+        if (addr.isLoopbackAddress() || addr.isLinkLocalAddress() || addr.isSiteLocalAddress()) {
+            return true;
+        }
+        if (addr instanceof Inet6Address v6 && isIpv4Mapped(v6.getAddress())) {
+            byte[] b = v6.getAddress();
+            // last 4 bytes hold the mapped IPv4 address
+            byte[] v4 = {b[12], b[13], b[14], b[15]};
+            try {
+                return isForbiddenAddress(InetAddress.getByAddress(v4));
+            } catch (java.net.UnknownHostException e) {
+                return true; // unparsable embedded IPv4 — treat as forbidden
+            }
+        }
+        return false;
+    }
+
+    /** IPv4-mapped IPv6 (::ffff:a.b.c.d): first 10 bytes 0, bytes 10-11 0xFF. */
+    private static boolean isIpv4Mapped(byte[] b) {
+        if (b.length != 16) return false;
+        for (int i = 0; i < 10; i++) {
+            if (b[i] != 0) return false;
+        }
+        return b[10] == (byte) 0xFF && b[11] == (byte) 0xFF;
     }
 
     private void safeGet(String url, String key, ObjectNode root) {

@@ -2,6 +2,7 @@ package io.epiphaneia.connector.internal.elasticsearch;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.epiphaneia.infra.api.connector.AuthConfig;
 import io.epiphaneia.infra.api.connector.ConnectionConfig;
 import io.epiphaneia.infra.api.connector.Connector;
 import io.epiphaneia.infra.api.connector.QueryRequest;
@@ -41,22 +42,22 @@ public class ElasticsearchConnector implements Connector<QueryRequest, QueryResu
         if (request == null) {
             return new QueryResult.Failure("NULL_REQUEST", "Query request must not be null");
         }
-        if (request instanceof QueryRequest.Typed(String query, String url)) {
-            return executeQuery(query, url);
+        if (request instanceof QueryRequest.Typed(String query, String url, AuthConfig auth)) {
+            return executeQuery(query, url, auth);
         }
         return new QueryResult.Failure("UNSUPPORTED_REQUEST",
                 "Expected QueryRequest.Typed, got " + request.getClass().getSimpleName());
     }
 
-    private QueryResult executeQuery(String dslJson, String baseUrl) {
+    private QueryResult executeQuery(String dslJson, String baseUrl, AuthConfig auth) {
         try {
-            HttpRequest req = HttpRequest.newBuilder()
-                    .uri(URI.create(baseUrl + "/_search"))
+            HttpRequest.Builder builder = HttpRequest.newBuilder()
+                    .uri(URI.create(stripTrailingSlash(baseUrl) + "/_search"))
                     .timeout(Duration.ofSeconds(10))
                     .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(dslJson))
-                    .build();
-            HttpResponse<String> resp = HTTP.send(req, HttpResponse.BodyHandlers.ofString());
+                    .POST(HttpRequest.BodyPublishers.ofString(dslJson));
+            auth.applyTo(builder);
+            HttpResponse<String> resp = HTTP.send(builder.build(), HttpResponse.BodyHandlers.ofString());
 
             if (resp.statusCode() == 200) {
                 JsonNode root = MAPPER.readTree(resp.body());
@@ -67,7 +68,7 @@ public class ElasticsearchConnector implements Connector<QueryRequest, QueryResu
             return new QueryResult.Failure("HTTP_" + resp.statusCode(),
                     "Elasticsearch returned status " + resp.statusCode());
         } catch (Exception e) {
-            log.warn("Elasticsearch query failed: {}", e.getMessage());
+            log.warn("Elasticsearch query failed", e);
             return new QueryResult.Failure("QUERY_FAILED", e.getMessage());
         }
     }
@@ -75,18 +76,24 @@ public class ElasticsearchConnector implements Connector<QueryRequest, QueryResu
     @Override
     public boolean testConnection(ConnectionConfig config) {
         try {
-            HttpRequest req = HttpRequest.newBuilder()
-                    .uri(URI.create(config.url() + "/_cluster/health"))
+            HttpRequest.Builder builder = HttpRequest.newBuilder()
+                    .uri(URI.create(stripTrailingSlash(config.url()) + "/_cluster/health"))
                     .timeout(Duration.ofSeconds(3))
-                    .GET().build();
-            HttpResponse<String> resp = HTTP.send(req, HttpResponse.BodyHandlers.ofString());
+                    .GET();
+            config.authConfig().applyTo(builder);
+            HttpResponse<String> resp = HTTP.send(builder.build(), HttpResponse.BodyHandlers.ofString());
             if (resp.statusCode() == 200) {
                 JsonNode root = MAPPER.readTree(resp.body());
                 return root.has("cluster_name");
             }
             return false;
         } catch (Exception e) {
+            log.debug("Elasticsearch connection test failed: {}", e.getMessage());
             return false;
         }
+    }
+
+    private static String stripTrailingSlash(String url) {
+        return url != null && url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
     }
 }
