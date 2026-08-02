@@ -274,9 +274,81 @@ class DiagnosisOrchestratorImplTest {
         assertTrue(sseEvents.contains("state:ABORTED"));
     }
 
+    @Test
+    @DisplayName("timed-out diagnosis (createdAt older than 150s) is ABORTED")
+    void timeoutAbortsDiagnosis() throws Exception {
+        // createdAt is immutable on Message — set via reflection
+        setField(message, "createdAt", java.time.Instant.now().minusSeconds(200));
+
+        var ctx = new DiagnosisContext(conversation, message, application, llmProvider,
+                List.of(prometheusDs), "Why?");
+        when(evidenceRepo.findByMessageOrderByCollectedAtAsc(any())).thenReturn(List.of());
+
+        orchestrator.execute(ctx, ssePublisher);
+
+        assertEquals("ABORTED", message.getDiagnosisState());
+        assertTrue(sseEvents.contains("state:ABORTED"));
+        assertNotNull(message.getFailureReason());
+        assertTrue(message.getFailureReason().contains("timed out"));
+    }
+
+    @Test
+    @DisplayName("corrupt persisted state string aborts instead of silently restarting")
+    void corruptStateAbortsInsteadOfResetting() {
+        message.setDiagnosisState("COMPLETD"); // typo — invalid enum value
+
+        var ctx = new DiagnosisContext(conversation, message, application, llmProvider,
+                List.of(), "q");
+
+        orchestrator.execute(ctx, ssePublisher);
+
+        assertEquals("ABORTED", message.getDiagnosisState());
+        assertTrue(sseEvents.contains("state:ABORTED"));
+        assertNotNull(message.getFailureReason());
+        assertTrue(message.getFailureReason().contains("Corrupt"));
+    }
+
+    @Test
+    @DisplayName("empty built query records failure evidence, completes partial")
+    void emptyQueryProducesFailureEvidence() {
+        when(prometheusQueryBuilder.buildInstantQuery(anyString(), anyMap())).thenReturn("");
+
+        var ctx = new DiagnosisContext(conversation, message, application, llmProvider,
+                List.of(prometheusDs), "Why?");
+        when(evidenceRepo.findByMessageOrderByCollectedAtAsc(any())).thenReturn(List.of());
+        when(evidenceRepo.save(any(Evidence.class))).thenAnswer(i -> i.getArgument(0));
+
+        orchestrator.execute(ctx, ssePublisher);
+
+        verify(evidenceRepo).save(argThat(ev ->
+                "PROMETHEUS".equals(ev.getSource()) && ev.getSummary().contains("could not be queried")));
+        assertEquals("COMPLETED_PARTIAL", message.getDiagnosisState());
+    }
+
+    @Test
+    @DisplayName("risk level: 'highlight' must not match 'high' (word boundary)")
+    void riskLevelWordBoundary() {
+        var ctx = new DiagnosisContext(conversation, message, application, llmProvider,
+                List.of(), "q");
+        when(evidenceRepo.findByMessageOrderByCollectedAtAsc(any())).thenReturn(List.of());
+        when(llmClient.call(anyString(), any(LlmProvider.class)))
+                .thenReturn("Nothing to highlight here. Everything nominal.");
+
+        orchestrator.execute(ctx, ssePublisher);
+
+        assertEquals("LOW", message.getRiskLevel());
+        assertNotEquals("HIGH", message.getRiskLevel(), "'highlight' must not match word-boundary 'high'");
+    }
+
     private static void setEntityId(Object entity, UUID id) throws Exception {
         Field idField = entity.getClass().getDeclaredField("id");
         idField.setAccessible(true);
         idField.set(entity, id);
+    }
+
+    private static void setField(Object entity, String name, Object value) throws Exception {
+        Field field = entity.getClass().getDeclaredField(name);
+        field.setAccessible(true);
+        field.set(entity, value);
     }
 }

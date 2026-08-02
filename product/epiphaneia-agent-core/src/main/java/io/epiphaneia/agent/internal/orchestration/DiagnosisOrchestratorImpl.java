@@ -78,7 +78,6 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
         if (publisher == null) publisher = DiagnosisSseEventPublisher.NOOP;
 
         Instant start = Instant.now();
-        UUID convId = ctx.conversation().getId();
         UUID msgId = ctx.message().getId();
 
         // Ensure diagnosis starts in CREATED state
@@ -91,16 +90,19 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
 
         try {
             // 1. PLANNING
+            checkTimeout(ctx, start);
             transition(ctx, DiagnosisStateMachine.State.PLANNING, publisher);
-            String plan = planningPhase(ctx, publisher);
+            planningPhase(ctx, publisher);
 
             // 2. QUERYING
+            checkTimeout(ctx, start);
             transition(ctx, DiagnosisStateMachine.State.QUERYING, publisher);
-            int queriesSucceeded = queryingPhase(ctx, plan, publisher);
+            int queriesSucceeded = queryingPhase(ctx, publisher);
 
             // 3. ANALYZING
+            checkTimeout(ctx, start);
             transition(ctx, DiagnosisStateMachine.State.ANALYZING, publisher);
-            analyzingPhase(ctx, plan, publisher);
+            analyzingPhase(ctx, publisher);
 
             // 4. COMPLETED or COMPLETED_PARTIAL
             if (queriesSucceeded > 0) {
@@ -113,7 +115,13 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
             abort(ctx, e.getMessage(), publisher);
         } catch (Exception e) {
             log.error("Diagnosis failed for message {}", msgId, e);
-            DiagnosisStateMachine.State current = parseState(ctx.message().getDiagnosisState());
+            DiagnosisStateMachine.State current;
+            try {
+                current = parseState(ctx.message().getDiagnosisState());
+            } catch (IllegalStateException corrupt) {
+                // corrupt persisted state: FAILED is the safe terminal state
+                current = null;
+            }
             if (current == DiagnosisStateMachine.State.QUERYING) {
                 complete(ctx, start, DiagnosisStateMachine.State.COMPLETED_PARTIAL, publisher);
             } else {
@@ -137,13 +145,14 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
                 "dataSourceDetails", describeDataSourceDetails(ctx.dataSources())));
 
         String plan = llmClient.call(systemPrompt, planningPrompt, ctx.llmProvider());
-        log.debug("Planning result for {}: length={} chars", ctx.message().getId(), plan.length());
+        log.debug("Planning result for {}: length={} chars", ctx.message().getId(),
+                plan != null ? plan.length() : 0);
         return plan;
     }
 
     // ─── Phase: Querying ────────────────────────────────────────────
 
-    private int queryingPhase(DiagnosisContext ctx, String plan, DiagnosisSseEventPublisher pub) {
+    private int queryingPhase(DiagnosisContext ctx, DiagnosisSseEventPublisher pub) {
         List<DataSource> sources = ctx.dataSources() != null ? ctx.dataSources() : List.of();
         if (sources.isEmpty()) {
             pub.step(ctx.conversation().getId(), ctx.message().getId(),
@@ -156,7 +165,7 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
             try {
                 pub.step(ctx.conversation().getId(), ctx.message().getId(),
                         "Querying " + ds.getType() + ": " + ds.getName() + "...");
-                List<Evidence> evidenceList = queryDataSource(ctx, ds, plan);
+                List<Evidence> evidenceList = queryDataSource(ctx, ds);
                 for (Evidence ev : evidenceList) {
                     evidenceRepo.save(ev);
                 }
@@ -180,9 +189,17 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private List<Evidence> queryDataSource(DiagnosisContext ctx, DataSource ds, String plan) {
+    private List<Evidence> queryDataSource(DiagnosisContext ctx, DataSource ds) {
         String queryStr = buildQueryForDataSource(ds, ctx.question());
+        if (queryStr == null || queryStr.isBlank()) {
+            // fail loudly: the calling phase records a Failure evidence and continues
+            throw new IllegalStateException(
+                    "No query could be built for data source type " + ds.getType());
+        }
         Connector connector = connectorRegistry.getConnector(ds.getType());
+        if (connector == null) {
+            throw new IllegalStateException("No connector registered for type " + ds.getType());
+        }
         QueryResult result = connector.query(new QueryRequest.Typed(queryStr, ds.getUrl()));
 
         Evidence ev = new Evidence();
@@ -210,8 +227,9 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
                 default -> "";
             };
         } catch (Exception e) {
-            log.warn("Failed to build query for {}: {}", ds.getType(), e.getMessage());
-            return "";
+            // preserve the cause: the caller logs the failure evidence with full context
+            throw new IllegalStateException(
+                    "Failed to build query for data source type " + ds.getType(), e);
         }
     }
 
@@ -225,7 +243,7 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
 
     // ─── Phase: Analyzing ───────────────────────────────────────────
 
-    private void analyzingPhase(DiagnosisContext ctx, String plan, DiagnosisSseEventPublisher pub) {
+    private void analyzingPhase(DiagnosisContext ctx, DiagnosisSseEventPublisher pub) {
         pub.step(ctx.conversation().getId(), ctx.message().getId(),
                 "Analyzing collected evidence...");
 
@@ -237,7 +255,8 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
                 "evidence", evidenceText));
 
         String analysis = llmClient.call(analysisPrompt, ctx.llmProvider());
-        log.debug("Analysis result for {}: length={} chars", ctx.message().getId(), analysis.length());
+        log.debug("Analysis result for {}: length={} chars", ctx.message().getId(),
+                analysis != null ? analysis.length() : 0);
 
         parseHypotheses(ctx.message(), analysis);
         parseSuggestions(ctx.message(), analysis);
@@ -283,6 +302,21 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
 
     // ─── State management ───────────────────────────────────────────
 
+    private void checkTimeout(DiagnosisContext ctx, Instant start) {
+        Instant createdAt = ctx.message().getCreatedAt() != null ? ctx.message().getCreatedAt() : start;
+        DiagnosisStateMachine.State current;
+        try {
+            current = parseState(ctx.message().getDiagnosisState());
+        } catch (IllegalStateException e) {
+            // corrupt persisted state; let transition/abort handle it
+            return;
+        }
+        if (DiagnosisStateMachine.isTimedOut(current, createdAt, Instant.now())) {
+            throw new DiagnosisAbortedException(
+                    "Diagnosis timed out (limit: " + DiagnosisStateMachine.timeoutDescription() + ")");
+        }
+    }
+
     private void transition(DiagnosisContext ctx, DiagnosisStateMachine.State newState,
                             DiagnosisSseEventPublisher pub) {
         String currentStr = ctx.message().getDiagnosisState();
@@ -290,7 +324,14 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
             currentStr = DiagnosisStateMachine.State.CREATED.name();
             ctx.message().setDiagnosisState(currentStr);
         }
-        DiagnosisStateMachine.State current = parseState(currentStr);
+        DiagnosisStateMachine.State current;
+        try {
+            current = parseState(currentStr);
+        } catch (IllegalStateException e) {
+            // corrupt persisted state: abort instead of silently resetting to CREATED
+            // (a reset would bypass transition validation and restart a failed diagnosis)
+            throw new DiagnosisAbortedException("Corrupt diagnosis state '" + currentStr + "' in DB");
+        }
         if (!DiagnosisStateMachine.isValidTransition(current, newState)) {
             throw new DiagnosisAbortedException(
                     "Invalid transition: " + current + " → " + newState);
@@ -301,10 +342,11 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
     }
 
     private static DiagnosisStateMachine.State parseState(String s) {
+        if (s == null) return DiagnosisStateMachine.State.CREATED;
         try {
             return DiagnosisStateMachine.State.valueOf(s);
-        } catch (Exception e) {
-            return DiagnosisStateMachine.State.CREATED;
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Unknown diagnosis state in DB: '" + s + "'", e);
         }
     }
 
@@ -312,6 +354,10 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
 
     private void parseHypotheses(Message message, String analysis) {
         // Split on '1. ' or 'Hypothesis 1:' patterns with line anchors
+        if (analysis == null) {
+            saveFallbackHypothesis(message);
+            return;
+        }
         String[] parts = analysis.split("(?m)(?=^\\d+\\.\\s|^Hypothesis\\s\\d+)");
         short rank = 1;
         for (String part : parts) {
@@ -320,7 +366,8 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
             RootCauseHypothesis h = new RootCauseHypothesis();
             h.setMessage(message);
             h.setRank(rank);
-            String desc = trimmed.lines().findFirst().orElse("unknown");
+            String desc = trimmed.lines().findFirst().filter(s -> !s.isBlank())
+                    .orElse("unknown");
             h.setDescription(desc.substring(0, Math.min(500, desc.length())));
             h.setConfidence(extractConfidence(trimmed));
             if (rank == 1 && h.getConfidence() == null) h.setConfidence(0.7);
@@ -330,13 +377,17 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
             if (rank++ >= 3) break;
         }
         if (rank == 1) {
-            RootCauseHypothesis fallback = new RootCauseHypothesis();
-            fallback.setMessage(message);
-            fallback.setRank((short) 1);
-            fallback.setDescription("Unable to determine root cause from analysis.");
-            fallback.setConfidence(0.0);
-            hypothesisRepo.save(fallback);
+            saveFallbackHypothesis(message);
         }
+    }
+
+    private void saveFallbackHypothesis(Message message) {
+        RootCauseHypothesis fallback = new RootCauseHypothesis();
+        fallback.setMessage(message);
+        fallback.setRank((short) 1);
+        fallback.setDescription("Unable to determine root cause from analysis.");
+        fallback.setConfidence(0.0);
+        hypothesisRepo.save(fallback);
     }
 
     /** Heuristic: does this text segment look like a hypothesis rather than generic commentary? */
@@ -351,10 +402,15 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
                 || extractConfidence(text) != null;
     }
 
+    private static final int MAX_SUGGESTIONS = 10;
+
     private void parseSuggestions(Message message, String analysis) {
         // ponytail: simple extraction — "Suggestion:" / "Fix:" / numbered list in analysis
+        if (analysis == null) return;
         String[] lines = analysis.split("\\n");
+        int saved = 0;
         for (String line : lines) {
+            if (saved >= MAX_SUGGESTIONS) break;
             String trimmed = line.trim();
             if (trimmed.matches("(?i)^(suggestion|fix|recommendation)\\s*[:\\-].*")
                     || trimmed.matches("^\\d+\\.\\s+(use|try|increase|decrease|set|update|restart|check|add|remove|adjust|reduce|configure).*")) {
@@ -363,15 +419,25 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
                 s.setDescription(trimmed.substring(0, Math.min(500, trimmed.length())));
                 s.setAutoExecutionAllowed(false);
                 suggestionRepo.save(s);
+                saved++;
             }
         }
     }
 
+    private static final java.util.regex.Pattern CONFIDENCE_PATTERN =
+            java.util.regex.Pattern.compile("(?i)confidence\\s*[:=]?\\s*(\\d+(?:\\.\\d+)?)");
+    private static final java.util.regex.Pattern PERCENT_PATTERN =
+            java.util.regex.Pattern.compile("(\\d+)%");
+    private static final java.util.regex.Pattern WORD_HIGH_PATTERN =
+            java.util.regex.Pattern.compile("(?i)\\bhigh\\b");
+
     private void parseRiskAssessment(Message message, String analysis) {
+        if (analysis == null) return;
         String lower = analysis.toLowerCase();
         if (lower.contains("critical") || lower.contains("severe")) {
             message.setRiskLevel("CRITICAL");
-        } else if (lower.contains("high")) {
+        } else if (WORD_HIGH_PATTERN.matcher(lower).find()) {
+            // word boundary: "highlight"/"slightly" must not match "high"
             message.setRiskLevel("HIGH");
         } else if (lower.contains("medium") || lower.contains("moderate")) {
             message.setRiskLevel("MEDIUM");
@@ -381,8 +447,7 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
     }
 
     private static Double extractConfidence(String text) {
-        var m = java.util.regex.Pattern.compile(
-                "(?i)confidence\\s*[:=]?\\s*(\\d+(?:\\.\\d+)?)").matcher(text);
+        var m = CONFIDENCE_PATTERN.matcher(text);
         if (m.find()) {
             try {
                 double d = Double.parseDouble(m.group(1));
@@ -391,7 +456,7 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
                 return null;
             }
         }
-        var m2 = java.util.regex.Pattern.compile("(\\d+)%").matcher(text);
+        var m2 = PERCENT_PATTERN.matcher(text);
         if (m2.find()) {
             return Double.parseDouble(m2.group(1)) / 100.0;
         }
