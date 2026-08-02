@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -132,6 +131,28 @@ class ReportSynthesizerImplTest {
         String result = reportSynthesizer.synthesize(conv);
         assertTrue(result.contains("N/A") || result.contains("Not assessed"),
                 "Should handle null risk fields");
+    }
+
+    @Test
+    @DisplayName("template report handles null hypothesis confidence (no NPE)")
+    void templateHandlesNullHypothesisConfidence() throws Exception {
+        when(llmClient.call(anyString())).thenThrow(new RuntimeException("LLM error"));
+
+        Conversation conv = createConversationWithMessages();
+        Message diag = findAgentMessage(conv);
+
+        RootCauseHypothesis h = new RootCauseHypothesis();
+        h.setRank((short) 1);
+        h.setDescription("Pool saturation");
+        h.setConfidence(null); // nullable column — must not NPE in fallback template
+
+        when(evidenceRepo.findByMessageOrderByCollectedAtAsc(diag)).thenReturn(List.of());
+        when(hypothesisRepo.findByMessageOrderByRankAsc(diag)).thenReturn(List.of(h));
+        when(suggestionRepo.findByMessage(diag)).thenReturn(List.of());
+
+        String result = reportSynthesizer.synthesize(conv);
+        assertTrue(result.contains("(Confidence: N/A)"));
+        assertTrue(result.contains("Pool saturation"));
     }
 
     private Conversation createConversationWithMessages() throws Exception {

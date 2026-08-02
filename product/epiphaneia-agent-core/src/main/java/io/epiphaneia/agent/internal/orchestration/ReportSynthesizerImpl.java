@@ -69,11 +69,13 @@ public class ReportSynthesizerImpl implements ReportSynthesizer {
 
         Application app = conversation.getApplication();
 
+        Message question = messages.get(0);
+
         try {
             String reportPrompt = promptManager.interpolate("report", Map.of(
                     "applicationName", app != null ? app.getName() : "unknown",
-                    "question", messages.get(0).getContent(),
-                    "duration", formatDuration(messages.get(0).getCreatedAt(), diagnosis.getCompletedAt()),
+                    "question", question.getContent() != null ? question.getContent() : "",
+                    "duration", formatDuration(question.getCreatedAt(), diagnosis.getCompletedAt()),
                     "hypotheses", formatHypotheses(hypotheses),
                     "evidence", formatEvidence(evidence),
                     "suggestions", formatSuggestions(suggestions),
@@ -82,10 +84,15 @@ public class ReportSynthesizerImpl implements ReportSynthesizer {
                     "riskUrgency", diagnosis.getRiskUrgency() != null ? diagnosis.getRiskUrgency() : "Not assessed"
             ));
 
-            return llmClient.call(reportPrompt);
+            String llmResult = llmClient.call(reportPrompt);
+            if (llmResult == null) {
+                log.warn("LLM returned null report, generating template-only report");
+                return templateReport(app, question, evidence, hypotheses, suggestions, diagnosis);
+            }
+            return llmResult;
         } catch (Exception e) {
             log.warn("LLM report synthesis failed, generating template-only report", e);
-            return templateReport(app, messages.get(0), evidence, hypotheses, suggestions, diagnosis);
+            return templateReport(app, question, evidence, hypotheses, suggestions, diagnosis);
         }
     }
 
@@ -98,7 +105,7 @@ public class ReportSynthesizerImpl implements ReportSynthesizer {
         sb.append("# Diagnostic Report\n\n");
         sb.append("## Summary\n");
         sb.append("Application: ").append(app != null ? app.getName() : "unknown").append("\n");
-        sb.append("Question: ").append(question.getContent()).append("\n");
+        sb.append("Question: ").append(question.getContent() != null ? question.getContent() : "").append("\n");
         sb.append("Status: ").append(diagnosis.getDiagnosisState()).append("\n\n");
 
         sb.append("## Evidence Collected\n");
@@ -116,8 +123,11 @@ public class ReportSynthesizerImpl implements ReportSynthesizer {
             sb.append("No hypotheses generated.\n");
         } else {
             for (RootCauseHypothesis h : hypotheses) {
+                Double confidence = h.getConfidence();
                 sb.append("### Hypothesis ").append(h.getRank())
-                        .append(" (Confidence: ").append(String.format("%.0f%%", h.getConfidence() * 100)).append(")\n");
+                        .append(" (Confidence: ")
+                        .append(confidence != null ? String.format("%.0f%%", confidence * 100) : "N/A")
+                        .append(")\n");
                 sb.append(h.getDescription()).append("\n\n");
             }
         }
