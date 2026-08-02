@@ -67,9 +67,70 @@ class PrometheusQueryBuilderTest {
     }
 
     @Test
+    @DisplayName("instant query rejects null metric (consistent with range/rate)")
+    void instantQueryNullMetricThrows() {
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.buildInstantQuery(null, Map.of()));
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.buildInstantQuery("  ", Map.of()));
+    }
+
+    @Test
     @DisplayName("blank aggregation skipped")
     void blankAggregation() {
         String result = builder.buildRangeQuery("up", Map.of(), "  ", null);
         assertEquals("up", result);
+    }
+
+    @Test
+    @DisplayName("range window stays inside aggregation with balanced parens")
+    void aggregationRangeWindow() {
+        String result = builder.buildRangeQuery("http_requests_total",
+                Map.of("job", "api"), "rate", "5m");
+        assertEquals("rate(http_requests_total{job=\"api\"}[5m])", result);
+        // parens must balance: rate( ... [5m] )
+        assertEquals(count('(', result), count(')', result));
+    }
+
+    @Test
+    @DisplayName("nested-looking aggregation name is rejected (would break PromQL)")
+    void nestedAggregationNameRejected() {
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.buildRangeQuery("http_requests_total",
+                        Map.of("job", "api"), "sum(rate", "5m"));
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.buildRangeQuery("http_requests_total",
+                        Map.of(), "sum(rate)", "5m"));
+    }
+
+    @Test
+    @DisplayName("null metric throws (no silent NPE)")
+    void nullMetricThrows() {
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.buildRangeQuery(null, Map.of(), "rate", "5m"));
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.buildRangeQuery("  ", Map.of(), "rate", "5m"));
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.buildRateQuery(null, Map.of(), "5m"));
+    }
+
+    private static long count(char c, String s) {
+        return s.chars().filter(ch -> ch == c).count();
+    }
+
+    @Test
+    @DisplayName("invalid label name throws instead of producing broken PromQL")
+    void invalidLabelNameThrows() {
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.buildInstantQuery("up", Map.of("bad-label", "x")));
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.buildInstantQuery("up", Map.of("1label", "x")));
+    }
+
+    @Test
+    @DisplayName("label value with CR is escaped")
+    void labelValueCrEscaped() {
+        String result = builder.buildInstantQuery("up", Map.of("job", "a\rb"));
+        assertEquals("up{job=\"a\\rb\"}", result);
     }
 }

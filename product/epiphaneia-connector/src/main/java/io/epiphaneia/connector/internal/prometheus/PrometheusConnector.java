@@ -2,6 +2,7 @@ package io.epiphaneia.connector.internal.prometheus;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.epiphaneia.infra.api.connector.AuthConfig;
 import io.epiphaneia.infra.api.connector.ConnectionConfig;
 import io.epiphaneia.infra.api.connector.Connector;
 import io.epiphaneia.infra.api.connector.QueryRequest;
@@ -44,22 +45,23 @@ public class PrometheusConnector implements Connector<QueryRequest, QueryResult>
         if (request == null) {
             return new QueryResult.Failure("NULL_REQUEST", "Query request must not be null");
         }
-        if (request instanceof QueryRequest.Typed(String query, String url)) {
-            return executeQuery(query, url);
+        if (request instanceof QueryRequest.Typed(String query, String url, AuthConfig auth)) {
+            return executeQuery(query, url, auth);
         }
         return new QueryResult.Failure("UNSUPPORTED_REQUEST",
                 "Expected QueryRequest.Typed, got " + request.getClass().getSimpleName());
     }
 
-    private QueryResult executeQuery(String promql, String baseUrl) {
+    private QueryResult executeQuery(String promql, String baseUrl, AuthConfig auth) {
         try {
             String encoded = URLEncoder.encode(promql, StandardCharsets.UTF_8);
-            String apiUrl = baseUrl + "/api/v1/query?query=" + encoded;
-            HttpRequest req = HttpRequest.newBuilder()
+            String apiUrl = stripTrailingSlash(baseUrl) + "/api/v1/query?query=" + encoded;
+            HttpRequest.Builder builder = HttpRequest.newBuilder()
                     .uri(URI.create(apiUrl))
                     .timeout(Duration.ofSeconds(10))
-                    .GET().build();
-            HttpResponse<String> resp = HTTP.send(req, HttpResponse.BodyHandlers.ofString());
+                    .GET();
+            auth.applyTo(builder);
+            HttpResponse<String> resp = HTTP.send(builder.build(), HttpResponse.BodyHandlers.ofString());
 
             if (resp.statusCode() == 200) {
                 JsonNode root = MAPPER.readTree(resp.body());
@@ -76,7 +78,7 @@ public class PrometheusConnector implements Connector<QueryRequest, QueryResult>
             return new QueryResult.Failure("HTTP_" + resp.statusCode(),
                     "Prometheus returned status " + resp.statusCode());
         } catch (Exception e) {
-            log.warn("Prometheus query failed: {}", e.getMessage());
+            log.warn("Prometheus query failed", e);
             return new QueryResult.Failure("QUERY_FAILED", e.getMessage());
         }
     }
@@ -84,18 +86,24 @@ public class PrometheusConnector implements Connector<QueryRequest, QueryResult>
     @Override
     public boolean testConnection(ConnectionConfig config) {
         try {
-            HttpRequest req = HttpRequest.newBuilder()
-                    .uri(URI.create(config.url() + "/api/v1/status/buildinfo"))
+            HttpRequest.Builder builder = HttpRequest.newBuilder()
+                    .uri(URI.create(stripTrailingSlash(config.url()) + "/api/v1/status/buildinfo"))
                     .timeout(Duration.ofSeconds(3))
-                    .GET().build();
-            HttpResponse<String> resp = HTTP.send(req, HttpResponse.BodyHandlers.ofString());
+                    .GET();
+            config.authConfig().applyTo(builder);
+            HttpResponse<String> resp = HTTP.send(builder.build(), HttpResponse.BodyHandlers.ofString());
             if (resp.statusCode() == 200) {
                 JsonNode root = MAPPER.readTree(resp.body());
                 return "success".equals(root.path("status").asText());
             }
             return false;
         } catch (Exception e) {
+            log.debug("Prometheus connection test failed: {}", e.getMessage());
             return false;
         }
+    }
+
+    private static String stripTrailingSlash(String url) {
+        return url != null && url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
     }
 }

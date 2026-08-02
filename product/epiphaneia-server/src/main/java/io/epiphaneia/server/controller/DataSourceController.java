@@ -81,11 +81,11 @@ public class DataSourceController {
                 .orElseThrow(() -> new IllegalArgumentException("Data source not found: " + id));
         try {
             var connector = connectorRegistry.getConnector(ds.getType());
-            AuthConfig auth = switch (ds.getAuthType()) {
-                case "BASIC" -> AuthConfig.basic("", "");
-                case "BEARER" -> AuthConfig.bearer("");
-                default -> AuthConfig.none();
-            };
+            if (connector == null) {
+                return ApiResponse.ok(new TestConnectionResponse(false,
+                        "No connector registered for type " + ds.getType()));
+            }
+            AuthConfig auth = AuthConfig.from(ds.getAuthType(), ds.getAuthConfig());
             var config = new ConnectionConfig(ds.getUrl(), auth);
             boolean ok = connector.testConnection(config);
             ds.setConnected(ok);

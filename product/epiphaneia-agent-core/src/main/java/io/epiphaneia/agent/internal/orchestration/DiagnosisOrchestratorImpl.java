@@ -12,6 +12,7 @@ import io.epiphaneia.llm.api.template.PromptTemplateManager;
 import io.epiphaneia.engine.api.query.EsQueryBuilder;
 import io.epiphaneia.engine.api.query.PrometheusQueryBuilder;
 import io.epiphaneia.infra.api.ConnectorRegistry;
+import io.epiphaneia.infra.api.connector.AuthConfig;
 import io.epiphaneia.infra.api.connector.Connector;
 import io.epiphaneia.infra.api.connector.QueryRequest;
 import io.epiphaneia.infra.api.connector.QueryResult;
@@ -200,7 +201,8 @@ public class DiagnosisOrchestratorImpl implements DiagnosisOrchestrator {
         if (connector == null) {
             throw new IllegalStateException("No connector registered for type " + ds.getType());
         }
-        QueryResult result = connector.query(new QueryRequest.Typed(queryStr, ds.getUrl()));
+        QueryResult result = connector.query(new QueryRequest.Typed(queryStr, ds.getUrl(),
+                AuthConfig.from(ds.getAuthType(), ds.getAuthConfig())));
 
         Evidence ev = new Evidence();
         ev.setMessage(ctx.message());
