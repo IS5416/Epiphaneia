@@ -43,8 +43,31 @@
 - **authConfig 明文存储**（批次 A 审查发现，未修）：DataSource.authConfig jsonb 透传未加密，需独立安全批次处理
 - 批次 D/E 计划：LlmClient/OpenAiCompatibleChatModel 测试 + onStatus 错误映射、ConversationController 端点测试 + DiagnosisSkill 修复
 
+## 批次 D：llm 模块（feat/phase8-llm）
+
+- **LLM 链路零测试**（最大技术债）→ OpenAiCompatibleChatModel 6 个 MockWebServer 全链路测试（成功解析、429/401/500 映射、空 choices、/v1 归一化）+ ModelRouter 2 个 CUSTOM 测试
+- **onStatus 错误映射** — 429 → LlmRateLimitedException（提取 Retry-After）；4xx → IllegalArgumentException；5xx → IllegalStateException。`LlmRateLimitedException` 此前定义了从未使用
+- **CUSTOM 空 baseUrl** — 硬失败替代相对路径请求
+- **异常体系移 api 层** — EpiphaneiaException + LlmRateLimitedException 从 infra internal 移 api.exception（跨模块契约归属）；internal 3 个异常补 import
+
+审查：无 P0/P1 可合入；1 P2 留后（CUSTOM 校验时机 — 保存时校验）。
+构建注意：`mvn install` 触发 OWASP dependency-check（NVD 下载可卡数分钟）— 用 `-Ddependency-check.skip=true`。
+
+## 批次 E：server 层（feat/phase8-server）
+
+- **hasActiveDiagnosis O(N)→O(1)** — 加载全部 messages 改为 DB 侧 existsBy 查询；corrupt 状态字符串不再 valueOf 抛异常
+- **delete SSE 泄漏** — 先 close 再删（@Transactional 移除，deleteById 自带事务，SSE 生命周期与事务解耦）
+- **replayEvents 假实现删除** — 前端零引用（创建后立即 close）
+- **question 校验** — blank/2000 字符上限
+- **SSE 异常加固** — send 捕获全部异常（含 IllegalStateException）；close 逐个 try-catch complete
+- 测试 +13：ConversationController 纯 mock 单测（InOrder 顺序验证、诊断失败传播）
+
+审查：通过（0 P0/P1）；2 P2 + 2 P3 已修，2 项留后（close 竞态窗口、虚拟线程 timeout 依赖 — 均低风险）。
+
 ## 提交
 
 - `17c2d44` / merge `f29f024`（批次 A）
 - `59fc0a4` / merge `6e2a775`（批次 B）
-- 批次 C 待提交
+- `fa05cd6` / merge `33b801e`（批次 C）
+- `4054e2c` / merge `0707c96`（批次 D）
+- 批次 E 待提交

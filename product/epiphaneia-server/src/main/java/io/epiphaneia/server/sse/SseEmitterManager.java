@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,7 +58,9 @@ public class SseEmitterManager implements DiagnosisSseEventPublisher {
         for (var entry : clients.entrySet()) {
             try {
                 entry.getValue().send(SseEmitter.event().name(eventName).data(data));
-            } catch (IOException e) {
+            } catch (Exception e) {
+                // IOException (disconnected) or IllegalStateException (completed emitter) —
+                // either way the client is dead; drop it so the loop survives
                 deadClients.add(entry.getKey());
             }
         }
@@ -97,10 +98,17 @@ public class SseEmitterManager implements DiagnosisSseEventPublisher {
     @Override
     public void close(UUID convId) {
         send(convId, "close", Map.of("conversationId", convId));
-        // Clean up all clients for this conversation
+        // Clean up all clients for this conversation; one failing complete() must
+        // not prevent the remaining emitters from being released
         Map<String, SseEmitter> clients = emitters.remove(convId);
         if (clients != null) {
-            clients.values().forEach(SseEmitter::complete);
+            for (SseEmitter emitter : clients.values()) {
+                try {
+                    emitter.complete();
+                } catch (Exception e) {
+                    log.debug("Failed to complete SSE emitter for {}: {}", convId, e.getMessage());
+                }
+            }
         }
     }
 }
