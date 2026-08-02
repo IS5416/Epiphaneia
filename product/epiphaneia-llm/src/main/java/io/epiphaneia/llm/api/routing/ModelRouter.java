@@ -5,7 +5,6 @@ import io.epiphaneia.domain.entity.LlmProvider;
 import io.epiphaneia.infra.api.EncryptionService;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -78,7 +77,10 @@ public class ModelRouter implements LlmProviderValidator {
             case "ANTHROPIC" -> "https://api.anthropic.com";
             case "DEEPSEEK" -> "https://api.deepseek.com";
             case "OLLAMA" -> "http://localhost:11434";
-            case "CUSTOM" -> "";
+            // CUSTOM has no well-known default — fail loudly instead of sending
+            // requests to a relative path that resolves to /v1/chat/completions
+            case "CUSTOM" -> throw new IllegalArgumentException(
+                    "CUSTOM provider requires an explicit baseUrl in the LLM provider configuration");
             default -> throw new IllegalArgumentException("Unknown provider: " + provider);
         };
     }

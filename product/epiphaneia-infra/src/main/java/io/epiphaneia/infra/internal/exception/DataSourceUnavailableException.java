@@ -1,5 +1,7 @@
 package io.epiphaneia.infra.internal.exception;
 
+import io.epiphaneia.infra.api.exception.EpiphaneiaException;
+
 /** Thrown when a data source (Prometheus, Elasticsearch) is unreachable. */
 public class DataSourceUnavailableException extends EpiphaneiaException {
     public DataSourceUnavailableException(String type, String message) {

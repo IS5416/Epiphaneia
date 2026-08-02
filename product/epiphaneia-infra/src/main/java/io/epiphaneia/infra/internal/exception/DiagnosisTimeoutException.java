@@ -1,5 +1,7 @@
 package io.epiphaneia.infra.internal.exception;
 
+import io.epiphaneia.infra.api.exception.EpiphaneiaException;
+
 /** Thrown when a diagnosis exceeds the 120s timeout. */
 public class DiagnosisTimeoutException extends EpiphaneiaException {
     public DiagnosisTimeoutException(String conversationId) {

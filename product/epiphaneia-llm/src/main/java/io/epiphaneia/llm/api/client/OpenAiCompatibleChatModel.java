@@ -9,6 +9,8 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
+import io.epiphaneia.infra.api.exception.LlmRateLimitedException;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
@@ -33,10 +35,12 @@ public class OpenAiCompatibleChatModel implements ChatModel {
 
     private final RestClient restClient;
     private final String modelName;
+    private final String baseUrl;
 
     public OpenAiCompatibleChatModel(String baseUrl, String apiKey, String modelName) {
         // ponytail: strip trailing /v1 or / — DeepSeek and OpenAI base URLs often include it
         String cleanUrl = baseUrl.replaceAll("/v1/?$", "").replaceAll("/+$", "");
+        this.baseUrl = cleanUrl;
         var httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(15))
                 .build();
@@ -58,7 +62,7 @@ public class OpenAiCompatibleChatModel implements ChatModel {
         Map<String, Object> body = buildRequestBody(messages);
 
         log.debug("OpenAI-compatible call: model={}, url={}/v1/chat/completions, messages={}",
-                modelName, restClient.toString(), messages.size());
+                modelName, baseUrl, messages.size());
 
         @SuppressWarnings("unchecked")
         Map<String, Object> response = restClient.post()
@@ -66,6 +70,19 @@ public class OpenAiCompatibleChatModel implements ChatModel {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, (request, resp) -> {
+                    if (resp.getStatusCode().value() == 429) {
+                        String retryAfter = resp.getHeaders().getFirst("Retry-After");
+                        throw new LlmRateLimitedException("Rate limited by LLM provider"
+                                + (retryAfter != null ? " (Retry-After: " + retryAfter + "s)" : ""));
+                    }
+                    throw new IllegalArgumentException(
+                            "LLM provider rejected request (HTTP " + resp.getStatusCode().value() + ")");
+                })
+                .onStatus(HttpStatusCode::is5xxServerError, (request, resp) -> {
+                    throw new IllegalStateException(
+                            "LLM provider server error (HTTP " + resp.getStatusCode().value() + ")");
+                })
                 .body(Map.class);
 
         return parseResponse(response);

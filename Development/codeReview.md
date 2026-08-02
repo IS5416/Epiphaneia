@@ -14,3 +14,4 @@
 | 2026-08-02 | Phase 8 A | 批次 A 安全修复 (6 文件) | 初查 1 P0 + 4 P1，已全部修复 | [codeReview/2026-08-02-02-batch-a-security.md](codeReviews/2026-08-02-02-batch-a-security.md) |
 | 2026-08-02 | Phase 8 B | 批次 B 编排层修复 (4 文件) | 无 P0/P1；6 P2 中 4 已修，2 留后 | [codeReview/2026-08-02-03-batch-b-orchestration.md](codeReviews/2026-08-02-03-batch-b-orchestration.md) |
 | 2026-08-02 | Phase 8 C | 批次 C engine/connector (12 文件) | 无 P0/P1；3 P2 中 3 已修 | [codeReview/2026-08-02-04-batch-c-engine-connector.md](codeReviews/2026-08-02-04-batch-c-engine-connector.md) |
+| 2026-08-02 | Phase 8 D | 批次 D llm 模块 (11 文件) | 无 P0/P1；1 P2 留后 | [codeReview/2026-08-02-05-batch-d-llm.md](codeReviews/2026-08-02-05-batch-d-llm.md) |
