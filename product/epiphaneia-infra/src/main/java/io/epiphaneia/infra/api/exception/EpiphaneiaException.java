@@ -1,6 +1,6 @@
-package io.epiphaneia.infra.internal.exception;
+package io.epiphaneia.infra.api.exception;
 
-/** Base exception for all Epiphaneia errors. */
+/** Base exception for all Epiphaneia errors. Public API — thrown across module boundaries. */
 public class EpiphaneiaException extends RuntimeException {
 
     private final String errorCode;

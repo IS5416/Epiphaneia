@@ -86,6 +86,23 @@ class ModelRouterTest {
     }
 
     @Test
+    @DisplayName("CUSTOM provider without explicit baseUrl fails loudly (no relative-path requests)")
+    void customWithoutBaseUrlThrows() {
+        LlmProvider llm = new LlmProvider();
+        llm.setProvider("CUSTOM");
+        assertThrows(IllegalArgumentException.class, () -> router.resolveBaseUrl(llm));
+    }
+
+    @Test
+    @DisplayName("CUSTOM provider with explicit baseUrl resolves it")
+    void customWithBaseUrl() {
+        LlmProvider llm = new LlmProvider();
+        llm.setProvider("CUSTOM");
+        llm.setBaseUrl("https://my-llm.example.com");
+        assertEquals("https://my-llm.example.com", router.resolveBaseUrl(llm));
+    }
+
+    @Test
     @DisplayName("supported providers set is immutable")
     void supportedProviders() {
         assertEquals(5, router.getSupportedProviders().size());
