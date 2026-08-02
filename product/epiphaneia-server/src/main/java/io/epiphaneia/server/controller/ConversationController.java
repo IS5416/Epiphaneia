@@ -12,6 +12,7 @@ import io.epiphaneia.server.sse.SseEmitterManager;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -42,6 +43,7 @@ public class ConversationController {
         this.sseManager = sseManager;
     }
 
+    @Transactional(readOnly = true)
     @GetMapping
     public ApiResponse<ApiListResponse<ConversationResponse>> list(
             @RequestParam(name = "appId", required = false) UUID applicationId,
@@ -74,6 +76,7 @@ public class ConversationController {
         return ApiResponse.ok(mapper.toConversationResponse(conv));
     }
 
+    @Transactional(readOnly = true)
     @GetMapping("/{id}")
     public ApiResponse<ConversationDetailResponse> get(@PathVariable UUID id) {
         return convRepo.findById(id)
@@ -126,6 +129,7 @@ public class ConversationController {
         return emitter;
     }
 
+    @Transactional(readOnly = true)
     @GetMapping("/{id}/report")
     public ApiResponse<ReportResponse> getReport(@PathVariable UUID id) {
         Conversation conv = convRepo.findById(id)

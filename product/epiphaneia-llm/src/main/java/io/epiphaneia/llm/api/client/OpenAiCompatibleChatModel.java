@@ -10,8 +10,11 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 
+import java.net.http.HttpClient;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,10 +37,17 @@ public class OpenAiCompatibleChatModel implements ChatModel {
     public OpenAiCompatibleChatModel(String baseUrl, String apiKey, String modelName) {
         // ponytail: strip trailing /v1 or / — DeepSeek and OpenAI base URLs often include it
         String cleanUrl = baseUrl.replaceAll("/v1/?$", "").replaceAll("/+$", "");
+        var httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(15))
+                .build();
+        var factory = new JdkClientHttpRequestFactory(httpClient);
+        factory.setReadTimeout(Duration.ofSeconds(180));
+
         this.restClient = RestClient.builder()
                 .baseUrl(cleanUrl)
                 .defaultHeader("Authorization", "Bearer " + apiKey)
                 .defaultHeader("Content-Type", "application/json")
+                .requestFactory(factory)
                 .build();
         this.modelName = modelName;
     }

@@ -9,9 +9,9 @@ import io.epiphaneia.agent.api.orchestration.DiagnosisStateMachine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -58,8 +58,7 @@ public class DiagnosisSkill {
      * @param ssePublisher   SSE publisher for real-time streaming (null → NOOP)
      * @return the created AGENT message entity (diagnosis state updated in-place)
      */
-    // ponytail: TransactionTemplate inside orchestrator handles per-entity persistence.
-    // @Transactional removed because diagnosis now runs on virtual thread, not request thread.
+    @Transactional
     public Message diagnose(UUID conversationId, String question,
                             DiagnosisSseEventPublisher ssePublisher) {
         Conversation conversation = conversationRepo.findById(conversationId)
