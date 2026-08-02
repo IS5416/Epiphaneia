@@ -25,6 +25,8 @@ public class ConversationController {
     // ponytail: single-admin model — all CRUD operations assume single admin context.
     // Ownership/authz checks deferred to multi-user phase.
 
+    private static final int MAX_QUESTION_LENGTH = 2000;
+
     private final ConversationRepository convRepo;
     private final ApplicationRepository appRepo;
     private final ConversationMapper mapper;
@@ -91,11 +93,22 @@ public class ConversationController {
         if (!convRepo.existsById(id)) {
             throw new IllegalArgumentException("Conversation not found: " + id);
         }
-        convRepo.deleteById(id);
+        // SSE lifecycle stays outside the DB transaction: close connections before the
+        // delete so no events fire into a removed conversation, but a failed cascade
+        // delete (rollback) must not leave the SSE connection already dead
+        sseManager.close(id);
+        convRepo.deleteById(id); // JpaRepository.deleteById has its own transaction
     }
 
     @PostMapping(value = "/{id}/messages", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter sendMessage(@PathVariable UUID id, @RequestParam String question) {
+        if (question == null || question.isBlank()) {
+            throw new IllegalArgumentException("question must not be blank");
+        }
+        if (question.length() > MAX_QUESTION_LENGTH) {
+            throw new IllegalArgumentException(
+                    "question too long (max " + MAX_QUESTION_LENGTH + " chars)");
+        }
         // Create SSE emitter first (client gets immediate connection)
         SseEmitter emitter = sseManager.createEmitter(id);
 
@@ -117,15 +130,6 @@ public class ConversationController {
             }
         });
 
-        return emitter;
-    }
-
-    @GetMapping(value = "/{id}/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter replayEvents(@PathVariable UUID id) {
-        // ponytail: simplified replay — creates a new emitter and sends a done event
-        // Full replay (querying past events) to be implemented when SSE events are persisted
-        SseEmitter emitter = sseManager.createEmitter(id);
-        sseManager.close(id);
         return emitter;
     }
 

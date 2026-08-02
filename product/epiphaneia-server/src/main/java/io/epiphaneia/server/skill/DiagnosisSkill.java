@@ -34,17 +34,15 @@ public class DiagnosisSkill {
 
     private final ConversationRepository conversationRepo;
     private final MessageRepository messageRepo;
-    private final ApplicationRepository appRepo;
     private final DataSourceRepository dsRepo;
     private final LlmProviderRepository llmRepo;
     private final DiagnosisOrchestrator orchestrator;
 
     public DiagnosisSkill(ConversationRepository conversationRepo, MessageRepository messageRepo,
-                           ApplicationRepository appRepo, DataSourceRepository dsRepo,
+                           DataSourceRepository dsRepo,
                            LlmProviderRepository llmRepo, DiagnosisOrchestrator orchestrator) {
         this.conversationRepo = conversationRepo;
         this.messageRepo = messageRepo;
-        this.appRepo = appRepo;
         this.dsRepo = dsRepo;
         this.llmRepo = llmRepo;
         this.orchestrator = orchestrator;
@@ -96,9 +94,10 @@ public class DiagnosisSkill {
     }
 
     private boolean hasActiveDiagnosis(Conversation conversation) {
-        List<Message> messages = messageRepo.findByConversationOrderByCreatedAtAsc(conversation);
-        return messages.stream().anyMatch(m ->
-                m.getDiagnosisState() != null &&
-                DiagnosisStateMachine.isActive(DiagnosisStateMachine.State.valueOf(m.getDiagnosisState())));
+        // DB-side existence check (no full message list load); a corrupt state string
+        // simply doesn't match the active-state set and is treated as inactive
+        return messageRepo.existsByConversationAndDiagnosisStateIn(
+                conversation, DiagnosisStateMachine.getActiveStates().stream()
+                        .map(Enum::name).toList());
     }
 }
